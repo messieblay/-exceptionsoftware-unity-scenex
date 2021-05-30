@@ -1,0 +1,20 @@
+{
+    "name": "exsoftware.scenes.editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:0a0471484b079be408cb3a0d7fe94736",
+        "GUID:e98f51a5f9e9ac748931c6408eeea8f6",
+        "GUID:f7cdc24894930204eb832167f7b63e9e",
+        "GUID:96a03891036790b4589f14ae085ffa66",
+        "GUID:dcfb3b140d816614cb63f72ebb9b3999"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

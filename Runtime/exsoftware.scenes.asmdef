@@ -1,0 +1,17 @@
+{
+    "name": "exsoftware.scenes",
+    "rootNamespace": "",
+    "references": [
+        "GUID:e98f51a5f9e9ac748931c6408eeea8f6",
+        "GUID:dcfb3b140d816614cb63f72ebb9b3999"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

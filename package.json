@@ -1,0 +1,15 @@
+{
+  "name": "com.exceptionsoftware.exscenes",
+  "displayName": "Ex Scenes",
+  "version": "1.0.0",
+  "description": "Controlador de cargado escenas\n\nDependencia: Toolbar Extender\ncom.marijnzwemmer.unity-toolbar-extender 1.3.1\nhttps://github.com/marijnz/unity-toolbar-extender.git",
+  "author": {
+    "name": "Exception Software",
+    "email": "marcoblay@gmail.com",
+    "url": "https://github.com/messieblay/exceptionsoftware-unity-libraries"
+  },
+  "dependencies": {
+    "com.marijnzwemmer.unity-toolbar-extender": "1.3.1",
+    "com.exceptionsoftware.excodefactory": "1.0.0"
+  }
+}
