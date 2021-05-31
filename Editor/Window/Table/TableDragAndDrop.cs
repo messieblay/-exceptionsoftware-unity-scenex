@@ -155,35 +155,14 @@ namespace ExceptionSoftware.ExScenes
             switch (_dragModeEnding)
             {
                 case DragMode.ReorderScene:
-                    {
-                        var parent = treeModel.Find(args.parentItem.id);
-                        var selecteds = treeModel.Find(draggedRows.Select(s => s.id).ToList()).Cast<TreeElement>().ToList();
-                        treeModel.MoveElements(parent, args.insertAtIndex, selecteds);
-                    }
-                    break;
                 case DragMode.ReorderGroup:
-                    {
-                        var parent = treeModel.Find(args.parentItem.id);
-                        var selecteds = treeModel.Find(draggedRows.Select(s => s.id).ToList()).Cast<TreeElement>().ToList();
-                        treeModel.MoveElements(parent, args.insertAtIndex, selecteds);
-                    }
-                    break;
                 case DragMode.ReorderSubGroup:
                     {
                         var parent = treeModel.Find(args.parentItem.id);
                         var selecteds = treeModel.Find(draggedRows.Select(s => s.id).ToList()).Cast<TreeElement>().ToList();
                         treeModel.MoveElements(parent, args.insertAtIndex, selecteds);
-                        for (int i = 0; i < parent.children.Count; i++)
-                        {
-                            var item = (parent.children[i] as TableElement).item;
-                            EditorUtility.SetDirty(item);
-                        }
 
-                        parent.children.Cast<TableElement>().Select(s => s.item).ToList();
-                        if (parent.item != null) EditorUtility.SetDirty(parent.item);
-
-                        //EditorUtility.SetDirty(_d)
-                        //ScenexUtilityEditor.SetScenesPriorityByCurrentOrder();
+                        SaveReorder();
                     }
                     break;
 
@@ -201,6 +180,45 @@ namespace ExceptionSoftware.ExScenes
                     Reload();
                     break;
             }
+        }
+
+
+        void SaveReorder()
+        {
+            //Scenes Rerorder
+            var sceneFolder = treeModel.root.children[0];
+            ScenexUtilityEditor.Settings.scenes = sceneFolder.children.Cast<TableElement>().Select(s => s.item as SceneInfo).ToList();
+
+            var sceneGroups = treeModel.root.children[1];
+            var groups = sceneGroups.children.Cast<TableElement>().Select(s => s.item as Group).ToList();
+            ScenexUtilityEditor.Settings.groups = groups;
+
+            foreach (var group in sceneGroups.children.Cast<TableElement>())
+            {
+                if (!group.hasChildren) continue;
+
+                //Scenas de grupo
+                var groupscenes = group.children.Cast<TableElement>().Where(s => s.ItemType == TableElement.Type.Scene).ToList();
+                group.AsLayout.scenes = groupscenes.Select(s => s.item as SceneInfo).ToList();
+
+                //Reordenar subgrupos
+                var groupsubgroups = group.children.Cast<TableElement>().Where(s => s.ItemType == TableElement.Type.SubGroup).ToList();
+                (group.item as Group).childs = groupsubgroups.Select(s => s.item as SubGroup).ToList();
+
+                EditorUtility.SetDirty(group.AsLayout);
+
+                foreach (var subgroup in groupsubgroups)
+                {
+                    if (!subgroup.hasChildren) continue;
+
+                    //Scenas de grupo
+                    var subgroupscenes = subgroup.children.Cast<TableElement>().Where(s => s.ItemType == TableElement.Type.Scene).ToList();
+                    subgroup.AsLayout.scenes = subgroupscenes.Select(s => s.item as SceneInfo).ToList();
+                    EditorUtility.SetDirty(subgroup.AsLayout);
+                }
+            }
+
+            EditorUtility.SetDirty(ScenexUtilityEditor.Settings);
         }
     }
 }

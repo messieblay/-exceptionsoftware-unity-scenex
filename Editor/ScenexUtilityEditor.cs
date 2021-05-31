@@ -458,5 +458,23 @@ namespace ExceptionSoftware.ExScenes
             return sceneName.Trim().Split('_').First();
         }
         #endregion
+
+
+        public static void PublishToBuildSettings()
+        {
+
+            // Find valid Scene paths and make a list of EditorBuildSettingsScene
+            List<EditorBuildSettingsScene> editorBuildSettingsScenes = new List<EditorBuildSettingsScene>();
+            foreach (var sceneAsset in _settings.scenes)
+            {
+                string scenePath = AssetDatabase.GetAssetPath(sceneAsset.sceneAsset);
+                if (!string.IsNullOrEmpty(scenePath))
+                    editorBuildSettingsScenes.Add(new EditorBuildSettingsScene(scenePath, true));
+            }
+
+            // Set the Build Settings window Scene list
+            EditorBuildSettings.scenes = editorBuildSettingsScenes.ToArray();
+            Debug.Log($"Scenes published in BuildSettings {_settings.scenes.Count}");
+        }
     }
 }

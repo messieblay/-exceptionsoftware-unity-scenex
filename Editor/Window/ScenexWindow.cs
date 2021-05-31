@@ -110,7 +110,7 @@ namespace ExceptionSoftware.ExScenes
                 GUILayout.FlexibleSpace();
                 if (GUILayout.Button("Add to build settings", EditorStyles.toolbarButton))
                 {
-
+                    ScenexUtilityEditor.PublishToBuildSettings();
                 }
 
                 if (GUILayout.Button("Save", EditorStyles.toolbarButton))

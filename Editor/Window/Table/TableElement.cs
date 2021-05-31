@@ -20,7 +20,7 @@ namespace ExceptionSoftware.ExScenes
                 CheckType();
             }
         }
-
+        public Layout AsLayout => item as Layout;
         void CheckType()
         {
             if (item == null)
