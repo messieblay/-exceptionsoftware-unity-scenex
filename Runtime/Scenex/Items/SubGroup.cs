@@ -7,6 +7,7 @@ namespace ExceptionSoftware.ExScenes
     public class SubGroup : Layout
     {
         [SerializeField] public Group parent = null;
+        [SerializeField] public SceneInfo loadingScreen = null;
         //[SerializeField] public string ID = null;
         [SerializeField] public bool waitForInput = true;
     }

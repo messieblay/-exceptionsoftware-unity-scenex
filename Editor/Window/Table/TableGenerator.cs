@@ -11,7 +11,7 @@ namespace ExceptionSoftware.ExScenes
         static ScenexSettings _db;
         static List<TableElement> roots;
 
-        static TableElement _folderScenes, _folderGroup;
+        static TableElement _folderScenes, _folderLoading, _folderGroup;
 
         public static List<TableElement> GenerateTree()
         {
@@ -22,22 +22,28 @@ namespace ExceptionSoftware.ExScenes
             roots = new List<TableElement>();
             roots.Add(root);
 
-            CreateFolders(root);
 
             CreateScenes(root);
+            CreateLoadingScenes(root);
             CreateGroups(root);
 
             return roots;
         }
-        static void CreateFolders(TableElement root)
-        {
-        }
+
         static void CreateScenes(TableElement root)
         {
-            _folderScenes = CreateFolder(root, "Scenes", 8000);
+            _folderScenes = CreateFolder(root, "Scenes", 7000);
             foreach (var scene in _db.scenes)
             {
                 CreateScene(_folderScenes, scene);
+            }
+        }
+        static void CreateLoadingScenes(TableElement root)
+        {
+            _folderLoading = CreateFolder(root, "Loading screens", 8000);
+            foreach (var scene in _db.loadingScreens)
+            {
+                CreateLoadingScreen(_folderLoading, scene);
             }
         }
         static void CreateGroups(TableElement root)
@@ -64,6 +70,14 @@ namespace ExceptionSoftware.ExScenes
 
             roots.Add(item);
         }
+        public static void CreateLoadingScreen(TableElement parent, SceneInfo scene)
+        {
+            var item = new TableElement(scene.name, parent.depth + 1, ++IDCounter);
+            item.item = scene;
+
+            roots.Add(item);
+        }
+
         static void CreateGroup(TableElement parent, Group group)
         {
             var item = new TableElement(group.name, parent.depth + 1, group.GetInstanceID()/*++IDCounter*/);
@@ -81,11 +95,17 @@ namespace ExceptionSoftware.ExScenes
                 CreateSubGroup(item, subgroup);
             }
         }
+
         static void CreateSubGroup(TableElement parent, SubGroup subgroup)
         {
             var item = new TableElement(subgroup.name, parent.depth + 1, subgroup.GetInstanceID()/*++IDCounter*/);
             item.item = subgroup;
             roots.Add(item);
+
+            if (subgroup.loadingScreen != null)
+            {
+                CreateLoadingScreen(item, subgroup.loadingScreen);
+            }
 
             foreach (var scene in subgroup.scenes)
             {

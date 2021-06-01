@@ -60,7 +60,9 @@ namespace ExceptionSoftware.ExScenes
 
             if (_settings != null)
             {
-                _settings.scenes = ExAssets.FindAssetsByType<SceneInfo>().OrderBy(s => s.priority).ToList();
+                var scenes = ExAssets.FindAssetsByType<SceneInfo>().OrderBy(s => s.priority);
+                _settings.scenes = scenes.Where(s => !s.isLoadingScreen).ToList();
+                _settings.loadingScreens = scenes.Where(s => s.isLoadingScreen).ToList();
                 _settings.groups = ExAssets.FindAssetsByType<Group>().OrderBy(s => s.priority).ToList();
                 ValidateSceneInfoNames();
 
@@ -90,6 +92,14 @@ namespace ExceptionSoftware.ExScenes
             EditorUtility.SetDirty(item);
             onDataChanged.TryInvoke();
         }
+        public static void AddLoadingToSubgroup(SceneInfo scene, SubGroup item)
+        {
+            if (item.loadingScreen == scene) return;
+            item.loadingScreen = scene;
+            EditorUtility.SetDirty(item);
+            onDataChanged.TryInvoke();
+        }
+
         public static void RemoveSceneFrom(SceneInfo scene, Layout item)
         {
             if (!item.scenes.Contains(scene)) return;
@@ -115,6 +125,63 @@ namespace ExceptionSoftware.ExScenes
             onDataChanged.TryInvoke();
         }
 
+        public static void SetSceneAsLoading(params SceneInfo[] scenesinfo)
+        {
+            if (scenesinfo == null) return;
+            foreach (var scene in scenesinfo)
+            {
+                if (scene == null) continue;
+
+                if (IsSceneAssigned(scene))
+                {
+                    //Debug.Log()
+                    continue;
+                }
+
+                scene.isLoadingScreen = true;
+
+                _settings.scenes.Remove(scene);
+                _settings.loadingScreens.Add(scene);
+
+                EditorUtility.SetDirty(scene);
+            }
+        }
+        public static void SetSceneAsNormal(params SceneInfo[] scenesinfo)
+        {
+            if (scenesinfo == null) return;
+            foreach (var scene in scenesinfo)
+            {
+                if (scene == null) continue;
+
+                foreach (var sg in _settings.groups.SelectMany(s => s.childs).Where(s => s.loadingScreen == scene))
+                {
+                    sg.loadingScreen = null;
+                    EditorUtility.SetDirty(sg);
+                }
+
+                scene.isLoadingScreen = false;
+
+                _settings.loadingScreens.Remove(scene);
+                _settings.scenes.Add(scene);
+
+                EditorUtility.SetDirty(scene);
+            }
+        }
+
+        static bool IsSceneAssigned(SceneInfo scene)
+        {
+            foreach (var g in _settings.groups)
+            {
+                if (g.scenes.Contains(scene))
+                {
+                    return true;
+                }
+
+                if (g.childs.SelectMany(s => s.scenes).Contains(scene)) return true;
+
+            }
+            return false;
+        }
         public static void AddSubGroup(Group parent, SubGroup sub, bool fireDataChange = true)
         {
             if (parent == null || sub == null) return;
@@ -190,7 +257,12 @@ namespace ExceptionSoftware.ExScenes
 
             onDataChanged.TryInvoke();
         }
-
+        public static void RemoveLoadingScene(SubGroup subgroup, bool fireDataChange = true)
+        {
+            subgroup.loadingScreen = null;
+            EditorUtility.SetDirty(subgroup);
+            if (fireDataChange) onDataChanged.TryInvoke();
+        }
         public static void RemoveSceneFromParent(SceneInfo scene, Item parent, bool fireDataChange = true)
         {
             if (parent == null)
@@ -499,11 +571,22 @@ namespace ExceptionSoftware.ExScenes
 
         public static void PublishToBuildSettings()
         {
+            _settings.scenes?.ClearNulls();
+            _settings.loadingScreens?.ClearNulls();
+
+            List<SceneInfo> scenesToBuild = _settings.scenes.ToList();
+            if (_settings.loadingScreens != null && _settings.loadingScreens.Count > 0)
+            {
+                scenesToBuild.AddRange(_settings.loadingScreens);
+            }
+
             // Find valid Scene paths and make a list of EditorBuildSettingsScene
             List<EditorBuildSettingsScene> editorBuildSettingsScenes = new List<EditorBuildSettingsScene>();
-            for (int x = 0; x < _settings.scenes.Count; x++)
+
+
+            for (int x = 0; x < scenesToBuild.Count; x++)
             {
-                var sceneInfo = _settings.scenes[x];
+                var sceneInfo = scenesToBuild[x];
 
 
                 sceneInfo.buildIndex = x;

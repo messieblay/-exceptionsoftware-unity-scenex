@@ -30,16 +30,28 @@ namespace ExceptionSoftware.ExScenes
                     _type = Type.FolderScenes;
                 }
 
-                if (!name.ToLower().StartsWith("scen"))
+                if (name.ToLower().StartsWith("grou"))
                 {
                     _type = Type.FolderGroups;
                 }
+                if (name.ToLower().StartsWith("load"))
+                {
+                    _type = Type.FolderLoading;
+                }
+
             }
             else
             {
                 if (item is SceneInfo)
                 {
-                    _type = Type.Scene;
+                    if ((item as SceneInfo).isLoadingScreen)
+                    {
+                        _type = Type.LoadingScreen;
+                    }
+                    else
+                    {
+                        _type = Type.Scene;
+                    }
                 }
                 if (item is Layout)
                 {
@@ -59,10 +71,12 @@ namespace ExceptionSoftware.ExScenes
         [UnityEngine.SerializeField] Type _type = Type.Folder;
         public Type ItemType => _type;
 
-        [UnityEngine.SerializeField] public bool IsFolder => _type == Type.FolderGroups || _type == Type.FolderScenes;
+        [UnityEngine.SerializeField] public bool IsFolder => _type == Type.FolderGroups || _type == Type.FolderScenes || _type == Type.FolderLoading;
         [UnityEngine.SerializeField] public bool IsFolderScenes => _type == Type.FolderScenes;
         [UnityEngine.SerializeField] public bool IsFolderGroups => _type == Type.FolderGroups;
+        [UnityEngine.SerializeField] public bool IsFolderLoading => _type == Type.FolderLoading;
         [UnityEngine.SerializeField] public bool IsScene => _type == Type.Scene;
+        [UnityEngine.SerializeField] public bool IsLoadingScene => _type == Type.LoadingScreen;
         [UnityEngine.SerializeField] public bool IsGroup => _type == Type.Group;
         [UnityEngine.SerializeField] public bool IsSubGroup => _type == Type.SubGroup;
         [UnityEngine.SerializeField] public bool IsLayout => IsSubGroup || IsGroup;
@@ -76,7 +90,7 @@ namespace ExceptionSoftware.ExScenes
 
         public enum Type
         {
-            Folder, FolderScenes, FolderGroups, Scene, Layout, Group, SubGroup
+            Folder, FolderScenes, FolderGroups, FolderLoading, Scene, Layout, Group, SubGroup, LoadingScreen
         }
     }
 }

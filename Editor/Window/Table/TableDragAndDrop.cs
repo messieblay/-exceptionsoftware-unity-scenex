@@ -13,9 +13,11 @@ namespace ExceptionSoftware.ExScenes
         enum DragMode
         {
             Scene,
+            Loading,
             Group,
             SubGroup,
             ReorderScene,
+            ReorderLoading,
             ReorderGroup,
             ReorderSubGroup,
             SceneToGroup,
@@ -24,6 +26,7 @@ namespace ExceptionSoftware.ExScenes
             GroupToSubGroup,
             GroupToGroup,
             SubGroupToSubGroup,
+            LoadingToSubgroup,
             None
         }
 
@@ -40,7 +43,7 @@ namespace ExceptionSoftware.ExScenes
                 var element = treeModel.Find(id);
                 if (element == null) continue;
 
-                if (element.IsScene || element.IsLayout)
+                if (element.IsScene || element.IsLoadingScene || element.IsLayout)
                 {
                     if (parent == null)
                     {
@@ -52,9 +55,13 @@ namespace ExceptionSoftware.ExScenes
                     }
                 }
             }
-            if (parent.IsFolder)
+            if (parent.IsFolderScenes)
             {
                 _dragModeBegin = DragMode.Scene;
+            }
+            if (parent.IsFolderLoading)
+            {
+                _dragModeBegin = DragMode.Loading;
             }
             else if (parent.IsGroup)
             {
@@ -93,6 +100,9 @@ namespace ExceptionSoftware.ExScenes
                     case DragMode.Scene:
                         _dragModeEnding = DragMode.ReorderScene;
                         return DragAndDropVisualMode.Move;
+                    case DragMode.Loading:
+                        _dragModeEnding = DragMode.ReorderLoading;
+                        return DragAndDropVisualMode.Move;
                     case DragMode.Group:
                         _dragModeEnding = DragMode.ReorderGroup;
                         return DragAndDropVisualMode.Move;
@@ -114,6 +124,13 @@ namespace ExceptionSoftware.ExScenes
                         if (parentElement.IsSubGroup)
                         {
                             _dragModeEnding = DragMode.SceneToSubGroup;
+                            return DragAndDropVisualMode.Copy;
+                        }
+                        break;
+                    case DragMode.Loading:
+                        if (parentElement.IsSubGroup)
+                        {
+                            _dragModeEnding = DragMode.LoadingToSubgroup;
                             return DragAndDropVisualMode.Copy;
                         }
                         break;
@@ -156,6 +173,7 @@ namespace ExceptionSoftware.ExScenes
             {
                 case DragMode.ReorderScene:
                 case DragMode.ReorderGroup:
+                case DragMode.ReorderLoading:
                 case DragMode.ReorderSubGroup:
                     {
                         var parent = treeModel.Find(args.parentItem.id);
@@ -179,6 +197,14 @@ namespace ExceptionSoftware.ExScenes
 
                     Reload();
                     break;
+
+                case DragMode.LoadingToSubgroup:
+                    foreach (TreeViewItem item in draggedRows)
+                    {
+                        ScenexUtilityEditor.AddLoadingToSubgroup(treeModel.Find(item.id).item as SceneInfo, parentElement.item as SubGroup);
+                    }
+
+                    break;
             }
         }
 
@@ -191,7 +217,14 @@ namespace ExceptionSoftware.ExScenes
             ScenexUtilityEditor.SetPriority(ref neworder);
             ScenexUtilityEditor.Settings.scenes.ClearAddRange(neworder);
 
-            var sceneGroups = treeModel.root.children[1];
+            //loading Rerorder
+            var lopadingFolder = treeModel.root.children[1];
+            var loadings = lopadingFolder.children.Cast<TableElement>().Select(s => s.item as SceneInfo).ToList();
+            ScenexUtilityEditor.SetPriority(ref loadings);
+            ScenexUtilityEditor.Settings.loadingScreens.ClearAddRange(loadings);
+
+            //Groups Rerorder
+            var sceneGroups = treeModel.root.children[2];
             var groups = sceneGroups.children.Cast<TableElement>().Select(s => s.item as Group).ToList();
             ScenexUtilityEditor.SetPriority(ref groups);
             ScenexUtilityEditor.Settings.groups = groups;

@@ -16,6 +16,7 @@ namespace ExceptionSoftware.ExScenes
 
 
         static Texture _folderIcon = EditorGUIUtility.IconContent("d_Folder Icon").image;
+        static Texture _LoadingSceneIcon = EditorGUIUtility.IconContent("d_StreamingController Icon").image;
         static Texture _SceneIcon = EditorGUIUtility.IconContent("d_SceneAsset Icon").image;
         static Texture _GroupIcon = EditorGUIUtility.IconContent("d_ScriptableObject Icon").image;
         static Texture _subGroupIcon = EditorGUIUtility.IconContent("d_ScriptableObject On Icon").image;
@@ -129,8 +130,9 @@ namespace ExceptionSoftware.ExScenes
                             if (item.data.IsFolder)
                                 GUI.DrawTexture(toggleRect, _folderIcon, ScaleMode.ScaleToFit);
                             else if (item.data.IsScene)
-
                                 GUI.DrawTexture(toggleRect, _SceneIcon, ScaleMode.ScaleToFit);
+                            else if (item.data.IsLoadingScene)
+                                GUI.DrawTexture(toggleRect, _LoadingSceneIcon, ScaleMode.ScaleToFit);
                             else if (item.data.IsGroup)
                                 GUI.DrawTexture(toggleRect, _GroupIcon, ScaleMode.ScaleToFit);
                             else if (item.data.IsSubGroup)
@@ -368,6 +370,13 @@ namespace ExceptionSoftware.ExScenes
             if (itemClicked.IsScene)
             {
                 menu = new GenericMenu();
+                menu.AddItem(EditorGUIUtility.TrTextContent("Set as Loading screen"), false, delegate ()
+                {
+                    var groupsSelected = FindScenexItems<SceneInfo>(GetSelection()).ToArray();
+                    ScenexUtilityEditor.SetSceneAsLoading(groupsSelected);
+                    ScenexUtilityEditor.onDataChanged.TryInvoke();
+                });
+
                 menu.AddItem(EditorGUIUtility.TrTextContent("Remove"), false, delegate ()
                 {
                     TableElement itemToRemove = null;
@@ -389,7 +398,36 @@ namespace ExceptionSoftware.ExScenes
                 });
                 menu.ShowAsContext();
             }
+            if (itemClicked.IsLoadingScene)
+            {
+                menu = new GenericMenu();
+                menu.AddItem(EditorGUIUtility.TrTextContent("Set as Scene"), false, delegate ()
+                {
+                    var groupsSelected = FindScenexItems<SceneInfo>(GetSelection()).ToArray();
+                    ScenexUtilityEditor.SetSceneAsNormal(groupsSelected);
+                    ScenexUtilityEditor.onDataChanged.TryInvoke();
+                });
 
+                menu.AddItem(EditorGUIUtility.TrTextContent("Remove"), false, delegate ()
+                {
+                    TableElement itemToRemove = null;
+                    var selection = GetSelection();
+
+                    foreach (var idSelected in selection)
+                    {
+                        itemToRemove = treeModel.Find(idSelected);
+                        if (itemToRemove != null && itemToRemove.IsLoadingScene)
+                        {
+
+                            TableElement parent = treeModel.Find(itemToRemove.parent.id);
+                            ScenexUtilityEditor.RemoveLoadingScene(parent.item as SubGroup, false);
+                        }
+                    }
+
+                    ScenexUtilityEditor.onDataChanged.TryInvoke();
+                });
+                menu.ShowAsContext();
+            }
         }
 
         List<T> FindScenexItems<T>(IList<int> ids) where T : Item
