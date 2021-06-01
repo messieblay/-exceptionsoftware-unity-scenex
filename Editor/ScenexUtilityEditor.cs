@@ -195,7 +195,29 @@ namespace ExceptionSoftware.ExScenes
         {
             if (parent == null)
             {
+                string sceneName = scene.name;
                 //Se quiere borrar escena de toda la bases de datos
+                foreach (var g in _settings.groups)
+                {
+                    if (g.scenes.Contains(scene))
+                    {
+                        g.scenes.Remove(scene);
+                        EditorUtility.SetDirty(g);
+                    }
+
+                    foreach (var sg in g.childs)
+                    {
+
+                        if (sg.scenes.Contains(scene))
+                        {
+                            sg.scenes.Remove(scene);
+                            EditorUtility.SetDirty(sg);
+                        }
+                    }
+                }
+
+                AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(scene));
+                Debug.Log($"Scene {sceneName} removed");
             }
             else
             {
@@ -205,7 +227,13 @@ namespace ExceptionSoftware.ExScenes
                 if (fireDataChange) onDataChanged.TryInvoke();
             }
         }
-        //public static void SetNewOrder(List<SceneInfo>)
+        public static void SetPriority<T>(ref List<T> list) where T : Item
+        {
+            for (int i = 0; i < list.Count; i++)
+            {
+                list[i].priority = i;
+            }
+        }
         public static void SetScenesPriorityByCurrentOrder()
         {
             for (int i = 0; i < _settings.scenes.Count; i++)
@@ -215,22 +243,21 @@ namespace ExceptionSoftware.ExScenes
                 EditorUtility.SetDirty(_settings.scenes[i]);
             }
 
-            foreach (var group in _settings.groups)
+            for (int i = 0; i < _settings.groups.Count; i++)
             {
+                _settings.groups[i].priority = i;
 
-                for (int x = 0; x < group.scenes.Count; x++)
+                for (int u = 0; u < _settings.groups[i].childs.Count; u++)
                 {
-                    group.scenes[x].priority = x;
+                    _settings.groups[i].childs[u].priority = u;
+
+                    EditorUtility.SetDirty(_settings.groups[i].childs[u]);
                 }
 
-                foreach (var sub in group.childs)
-                {
-                    for (int x = 0; x < sub.scenes.Count; x++)
-                    {
-                        sub.scenes[x].priority = x;
-                    }
-                }
+                EditorUtility.SetDirty(_settings.groups[i]);
             }
+
+
             EditorUtility.SetDirty(_settings);
         }
         /// <summary>

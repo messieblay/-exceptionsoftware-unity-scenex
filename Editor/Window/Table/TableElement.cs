@@ -63,9 +63,9 @@ namespace ExceptionSoftware.ExScenes
         [UnityEngine.SerializeField] public bool IsFolderScenes => _type == Type.FolderScenes;
         [UnityEngine.SerializeField] public bool IsFolderGroups => _type == Type.FolderGroups;
         [UnityEngine.SerializeField] public bool IsScene => _type == Type.Scene;
-        [UnityEngine.SerializeField] public bool IsLayout => _type == Type.Layout;
         [UnityEngine.SerializeField] public bool IsGroup => _type == Type.Group;
         [UnityEngine.SerializeField] public bool IsSubGroup => _type == Type.SubGroup;
+        [UnityEngine.SerializeField] public bool IsLayout => IsSubGroup || IsGroup;
 
         //[UnityEngine.SerializeField] public bool IsFolder => item == null;
         //[UnityEngine.SerializeField] public bool IsFolderScenes => IsFolder && name.ToLower().StartsWith("scen");

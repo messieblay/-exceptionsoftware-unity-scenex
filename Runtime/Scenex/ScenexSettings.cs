@@ -3,14 +3,14 @@ using UnityEngine;
 
 namespace ExceptionSoftware.ExScenes
 {
+    [System.Serializable]
     public class ScenexSettings : ScriptableObject
     {
-        public bool useEmptySceneToLoad = true;
-        public float delayBetweenLoading = .1f;
+        [SerializeField] public bool useEmptySceneToLoad = true;
+        [SerializeField] public float delayBetweenLoading = .1f;
 
-        public List<SceneInfo> scenes = new List<SceneInfo>();
-        public List<Group> groups = new List<Group>();
-        public List<SubGroup> subgroups = new List<SubGroup>();
+        [SerializeField] public List<SceneInfo> scenes = new List<SceneInfo>();
+        [SerializeField] public List<Group> groups = new List<Group>();
 
     }
 }

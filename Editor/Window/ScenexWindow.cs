@@ -81,6 +81,8 @@ namespace ExceptionSoftware.ExScenes
                 m_TreeView.searchString = "";
                 m_Initialized = true;
             }
+            Undo.undoRedoPerformed -= ReupdateTable;
+            Undo.undoRedoPerformed += ReupdateTable;
         }
 
         public void ReupdateTable()
@@ -107,6 +109,10 @@ namespace ExceptionSoftware.ExScenes
             GUILayout.BeginArea(r, EditorStyles.toolbar);
             EditorGUILayout.BeginHorizontal();
             {
+                if (GUILayout.Button("Refresh", EditorStyles.toolbarButton))
+                {
+                    ReupdateTable();
+                }
                 GUILayout.FlexibleSpace();
                 if (GUILayout.Button("Add to build settings", EditorStyles.toolbarButton))
                 {
@@ -125,7 +131,7 @@ namespace ExceptionSoftware.ExScenes
 
         void DragBar(Rect rect)
         {
-            GUILayout.BeginArea(rect, "D&D Area: Drag here your game scenes", EditorStyles.helpBox);
+            GUILayout.BeginArea(rect, "D&D Area: Drag here your game scenes", (GUIStyle)"SelectionRect");
             {
 
             }
@@ -150,7 +156,6 @@ namespace ExceptionSoftware.ExScenes
                     {
                         Object obj = DragAndDrop.objectReferences[i];
                         string path = DragAndDrop.paths[i];
-                        Debug.Log(obj.GetType().Name);
 
                         if (obj is SceneAsset)
                         {

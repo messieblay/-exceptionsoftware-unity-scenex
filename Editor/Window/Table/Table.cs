@@ -283,16 +283,6 @@ namespace ExceptionSoftware.ExScenes
             return state;
         }
 
-        //protected override void KeyEvent()
-        //{
-        //    base.KeyEvent();
-
-        //    //if ((Event.current.keyCode == KeyCode.Delete) && (GetSelection().Count > 0))
-        //    //{
-        //    //    GetSelection()
-        //    //}
-        //}
-
         protected override void ContextClickedItem(int id)
         {
             //GetSelection
@@ -357,7 +347,6 @@ namespace ExceptionSoftware.ExScenes
 
             if (itemClicked.IsScene)
             {
-
                 menu = new GenericMenu();
                 menu.AddItem(EditorGUIUtility.TrTextContent("Remove"), false, delegate ()
                 {
@@ -367,11 +356,12 @@ namespace ExceptionSoftware.ExScenes
                     foreach (var idSelected in selection)
                     {
                         itemToRemove = treeModel.Find(idSelected);
-                        Debug.Log($"Remove {idSelected}: {itemToRemove.name}");
                         if (itemToRemove != null && itemToRemove.IsScene)
                         {
+
                             TableElement parent = treeModel.Find(itemToRemove.parent.id);
                             ScenexUtilityEditor.RemoveSceneFromParent(itemToRemove.item as SceneInfo, parent.item, false);
+                            Debug.Log($"Removed {idSelected}: {itemToRemove.name}");
                         }
                     }
 

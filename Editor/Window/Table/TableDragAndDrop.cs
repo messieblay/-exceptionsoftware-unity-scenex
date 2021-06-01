@@ -40,15 +40,16 @@ namespace ExceptionSoftware.ExScenes
                 var element = treeModel.Find(id);
                 if (element == null) continue;
 
-                if (!element.IsScene) return false;
-
-                if (parent == null)
+                if (element.IsScene || element.IsLayout)
                 {
-                    parent = element.parent as TableElement;
-                }
-                else
-                {
-                    if (parent != element.parent as TableElement) return false;
+                    if (parent == null)
+                    {
+                        parent = element.parent as TableElement;
+                    }
+                    else
+                    {
+                        if (parent != element.parent as TableElement) return false;
+                    }
                 }
             }
             if (parent.IsFolder)
@@ -84,7 +85,6 @@ namespace ExceptionSoftware.ExScenes
 
             if (args.parentItem == null) return DragAndDropVisualMode.Rejected;
             TableElement parentElement = treeModel.Find(args.parentItem.id);
-            //Debug.Log(args.dragAndDropPosition);
 
             if (parentElement == parentDraggedEleemnts)
             {
@@ -187,10 +187,13 @@ namespace ExceptionSoftware.ExScenes
         {
             //Scenes Rerorder
             var sceneFolder = treeModel.root.children[0];
-            ScenexUtilityEditor.Settings.scenes = sceneFolder.children.Cast<TableElement>().Select(s => s.item as SceneInfo).ToList();
+            var neworder = sceneFolder.children.Cast<TableElement>().Select(s => s.item as SceneInfo).ToList();
+            ScenexUtilityEditor.SetPriority(ref neworder);
+            ScenexUtilityEditor.Settings.scenes.ClearAddRange(neworder);
 
             var sceneGroups = treeModel.root.children[1];
             var groups = sceneGroups.children.Cast<TableElement>().Select(s => s.item as Group).ToList();
+            ScenexUtilityEditor.SetPriority(ref groups);
             ScenexUtilityEditor.Settings.groups = groups;
 
             foreach (var group in sceneGroups.children.Cast<TableElement>())
@@ -203,7 +206,9 @@ namespace ExceptionSoftware.ExScenes
 
                 //Reordenar subgrupos
                 var groupsubgroups = group.children.Cast<TableElement>().Where(s => s.ItemType == TableElement.Type.SubGroup).ToList();
-                (group.item as Group).childs = groupsubgroups.Select(s => s.item as SubGroup).ToList();
+                var subgroups = groupsubgroups.Select(s => s.item as SubGroup).ToList();
+                ScenexUtilityEditor.SetPriority(ref subgroups);
+                (group.item as Group).childs = subgroups;
 
                 EditorUtility.SetDirty(group.AsLayout);
 
@@ -217,7 +222,7 @@ namespace ExceptionSoftware.ExScenes
                     EditorUtility.SetDirty(subgroup.AsLayout);
                 }
             }
-
+            ScenexUtilityEditor.SetScenesPriorityByCurrentOrder();
             EditorUtility.SetDirty(ScenexUtilityEditor.Settings);
         }
     }

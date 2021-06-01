@@ -11,10 +11,6 @@ namespace ExceptionSoftware.ExScenes
         [SerializeField] public int canvasSortOrder = 0;
         [SerializeField] public bool autoActive = false;
 
-        //[SerializeField] public SceneInfo parent = null;
-        //[SerializeField] public List<SceneInfo> childs = new List<SceneInfo>();
-
-
 
 #if UNITY_EDITOR
         [SerializeField] public UnityEditor.SceneAsset sceneAsset = null;
