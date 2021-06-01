@@ -13,6 +13,9 @@ namespace ExceptionSoftware.ExScenes
         [MenuItem("Tools/Scenes/Manager", priority = 3000)]
         public static ScenexWindow GetWindow()
         {
+
+            //SceneListWindow currentWindow = (SceneListWindow)SceneListWindow.GetWindow<SceneListWindow>(new System.Type[] { wtype });
+
             var window = EditorWindow.GetWindow<ScenexWindow>();
             window.titleContent = new GUIContent("Scenex");
             window.Focus();
@@ -114,13 +117,10 @@ namespace ExceptionSoftware.ExScenes
                     ReupdateTable();
                 }
                 GUILayout.FlexibleSpace();
-                if (GUILayout.Button("Add to build settings", EditorStyles.toolbarButton))
-                {
-                    ScenexUtilityEditor.PublishToBuildSettings();
-                }
-
                 if (GUILayout.Button("Save", EditorStyles.toolbarButton))
                 {
+                    ScenexUtilityEditor.PublishToBuildSettings();
+                    ScenexUtilityEditor.CreateScenexEnumToLoadScenes();
                     EditorUtility.SetDirty(_db);
                     AssetDatabase.SaveAssets();
                 }

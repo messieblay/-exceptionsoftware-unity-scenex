@@ -260,6 +260,16 @@ namespace ExceptionSoftware.ExScenes
 
             EditorUtility.SetDirty(_settings);
         }
+
+        public static void CreateScenexEnumToLoadScenes()
+        {
+            CodeFactory.CodeFactory.CreateScripts(new CodeFactory.EnumTemplate(SCENES_PATH)
+            {
+                className = "ScenexEnum",
+                enums = CodeFactory.CodeFactory.GenerateEnumContent(_settings.groups.SelectMany(s => s.childs).Select(s => s.parent.name + "_" + s.name).ToList())
+            });
+            Debug.Log("ScenexEnum created");
+        }
         /// <summary>
         /// Activa el Play mode y guarda cual es la escena actual. Cuando se quite el play recupera esa escena
         /// </summary>
@@ -489,19 +499,28 @@ namespace ExceptionSoftware.ExScenes
 
         public static void PublishToBuildSettings()
         {
-
             // Find valid Scene paths and make a list of EditorBuildSettingsScene
             List<EditorBuildSettingsScene> editorBuildSettingsScenes = new List<EditorBuildSettingsScene>();
-            foreach (var sceneAsset in _settings.scenes)
+            for (int x = 0; x < _settings.scenes.Count; x++)
             {
-                string scenePath = AssetDatabase.GetAssetPath(sceneAsset.sceneAsset);
-                if (!string.IsNullOrEmpty(scenePath))
-                    editorBuildSettingsScenes.Add(new EditorBuildSettingsScene(scenePath, true));
+                var sceneInfo = _settings.scenes[x];
+
+
+                sceneInfo.buildIndex = x;
+                sceneInfo.name = sceneInfo.sceneName = sceneInfo.sceneAsset.name;
+
+                EditorUtility.SetDirty(sceneInfo);
+                sceneInfo.path = AssetDatabase.GetAssetPath(sceneInfo.sceneAsset);
+                if (!string.IsNullOrEmpty(sceneInfo.path))
+                    editorBuildSettingsScenes.Add(new EditorBuildSettingsScene(sceneInfo.path, true));
             }
 
             // Set the Build Settings window Scene list
             EditorBuildSettings.scenes = editorBuildSettingsScenes.ToArray();
-            Debug.Log($"Scenes published in BuildSettings {_settings.scenes.Count}");
+
+
+
+            Debug.Log($"{_settings.scenes.Count} Scenes published in BuildSettings");
         }
     }
 }

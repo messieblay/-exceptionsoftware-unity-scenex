@@ -1,4 +1,6 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -32,29 +34,29 @@ namespace ExceptionSoftware.ExScenes
             yield return onPostLoading();
         }
 
-        #region Loading Full Schema
+        #region Loading Full Group
 
-        public void OpenScenes(Schema schema, SceneInfo mainScene = null)
+        public void OpenScenes(Group Group, SceneInfo mainScene = null)
         {
             //if (_loadingRoutine != null) return;
-            if (schema.mainScene == null && mainScene != null) schema.mainScene = mainScene;
-            if (schema.mainScene == null)
-            {
-                Debug.LogError("Impedido cargado de escenas. Escena principal null");
-            }
-            //_loadingRoutine = StartCoroutine(LoadScenesRoutine(schema));
+            //if (Group.mainScene == null && mainScene != null) Group.mainScene = mainScene;
+            //if (Group.mainScene == null)
+            //{
+            //    Debug.LogError("Impedido cargado de escenas. Escena principal null");
+            //}
+            //_loadingRoutine = StartCoroutine(LoadScenesRoutine(Group));
         }
 
         OperationInfo currentOperation;
-        public IEnumerator LoadScenesRoutine(Schema schema)
+        public IEnumerator LoadScenesRoutine(Group Group)
         {
             onLoadingProgressStarts.Call();
 
             //InputServicex.DesActiveIS(111);
             //_actionDone = 0;
-            //_actionsMax = (schema.scenes.Count + 1) * 3;
+            //_actionsMax = (Group.scenes.Count + 1) * 3;
             currentOperation = new OperationInfo();
-            //schema.currentLoadingScreen = schema.loadingScreen ?? _sceneList.defaultLoadginScreen;
+            //Group.currentLoadingScreen = Group.loadingScreen ?? _sceneList.defaultLoadginScreen;
 
             //OnChangeProgress();
 
@@ -77,10 +79,10 @@ namespace ExceptionSoftware.ExScenes
             //SceneManager.LoadScene(_sceneList.Empty.SceneName);
             yield return null;
 
-            //yield return OpenLoadingScreen(schema);
+            //yield return OpenLoadingScreen(Group);
             yield return null;
 
-            yield return LoadScenes(schema);
+            //yield return LoadScenes(Group);
             yield return null;
 
             ScenexUtility.Log($" -- pre  START WAITING ALL SCENES LOADED-- ");
@@ -92,10 +94,10 @@ namespace ExceptionSoftware.ExScenes
                 canpass = true;
                 try
                 {
-                    for (int i = 0; i < schema.loadedScenes.Count; i++)
+                    for (int i = 0; i < Group.loadedScenes.Count; i++)
                     {
-                        if (schema.loadedScenes[i] == null) continue;
-                        if (schema.loadedScenes[i].Status != SceneStatus.Loaded)
+                        if (Group.loadedScenes[i] == null) continue;
+                        if (Group.loadedScenes[i].Status != SceneStatus.Loaded)
                         {
                             canpass = false;
                             break;
@@ -114,14 +116,14 @@ namespace ExceptionSoftware.ExScenes
 
             yield return null;
             ScenexUtility.Log("#ShowLoadedScenes");
-            yield return ShowLoadedScenes();
+            //yield return ShowLoadedScenes();
             yield return null;
 
 
             ScenexUtility.Log("#CallShowSceneEntryPoint");
-            for (int i = 0; i < schema.loadedScenes.Count; i++)
+            for (int i = 0; i < Group.loadedScenes.Count; i++)
             {
-                //CallShowSceneEntryPoint(schema.loadedScenes[i]);
+                //CallShowSceneEntryPoint(Group.loadedScenes[i]);
                 //IncProgress();
                 yield return null;
             }
@@ -131,7 +133,7 @@ namespace ExceptionSoftware.ExScenes
             //Toda la carga realizada
             onAllScenesLoaded.Call();
 
-            if (schema.waitForInput)
+            if (Group.waitForInput)
             {
                 yield return null;
                 yield return onWaitForInput.Call();
@@ -154,12 +156,71 @@ namespace ExceptionSoftware.ExScenes
         }
 
         #endregion
-        #region Schema
-        [System.NonSerialized] public Schema currentSchema = null;
-        IEnumerator LoadScenes(Schema schema)
-        {
+        #region Group
+        [System.NonSerialized] public Group currentGroup = null;
+        [System.NonSerialized] public SubGroup currentSubGroup = null;
 
-            currentSchema = schema;
+        public void LoadScene(string groupToLoad)
+        {
+            StartCoroutine(LoadScenes(groupToLoad));
+        }
+
+        public IEnumerator LoadScenes(string groupToLoad)
+        {
+            string[] split = groupToLoad.Split('_');
+            Debug.Log($"{split[0]}-{split[1]}");
+            Group group = null;
+            SubGroup subgroup = null;
+
+            group = ScenexUtility.Settings.groups.Find(s => s.ID == split[0].ToLower());
+            if (group == null)
+            {
+                Debug.Log($"Group {split[0]} not found");
+                yield break;
+            }
+
+
+            subgroup = group.childs.Find(s => s.ID == split[1].ToLower());
+            if (subgroup == null)
+            {
+                Debug.Log($"SubGroup {split[1]} not found");
+                yield break;
+            }
+
+            yield return LoadScenes(group, subgroup);
+        }
+        IEnumerator LoadScenes(Group group, SubGroup subgroup)
+        {
+            ScenexSettings scenexSettings = ScenexUtility.Settings;
+
+            Scene empty;
+            currentGroup = group;
+            currentSubGroup = subgroup;
+
+
+            //UNLOAD SCENES
+            empty = SceneManager.CreateScene("Empty", new CreateSceneParameters());
+
+            SceneManager.SetActiveScene(empty);
+
+            //Unload all Scenes
+            for (int i = SceneManager.sceneCount - 1; -1 < i; i--)
+            {
+                Scene scene = SceneManager.GetSceneAt(i);
+                if (scene == empty)
+                {
+                    Debug.Log($"{scene.name} skipped");
+                    continue;
+                }
+                yield return SceneManager.UnloadSceneAsync(scene.buildIndex, scenexSettings.unloadSceneOptions);
+            }
+
+
+            Debug.Log("All current scenes unloaded");
+
+
+
+            yield return new WaitForSeconds(5);
 
             {
                 /*
@@ -171,42 +232,48 @@ namespace ExceptionSoftware.ExScenes
             }
 
 
+            List<SceneInfo> listScenesToLoad = new List<SceneInfo>();
+            listScenesToLoad.AddRange(currentGroup.scenes);
+            listScenesToLoad.AddRange(currentSubGroup.scenes);
 
-            /*
-             * INICIO DE CARGADO
-             * CARGADO DE MAIN SCENE
-             */
-            LoadScene(currentSchema.mainScene);
+            listScenesToLoad = listScenesToLoad.OrderBy(s => s.priority).ToList();
 
-            /*
-             * CARGADO DE CHUNKS
-             */
-            //for (int i = 0; i < currentSchema.mainScene.childs.Count; i++)
-            //{
-            //    LoadScene(currentSchema.mainScene.childs[i]);
-
-            //    yield return null;
-            //}
 
             /*
              * CARGADO ESCENAS DEPENDIENTES DEL ESQUEMA
              */
-            for (int i = 0; i < currentSchema.scenes.Count; i++)
+            for (int i = 0; i < listScenesToLoad.Count; i++)
             {
-                LoadScene(currentSchema.scenes[i]);
+
+                listScenesToLoad[i].asyncOperation = SceneManager.LoadSceneAsync(listScenesToLoad[i].buildIndex, LoadSceneMode.Additive);
+                listScenesToLoad[i].asyncOperation.allowSceneActivation = false;
+
+                while (listScenesToLoad[i].asyncOperation.progress < 0.9f)
+                {
+                    yield return new WaitForEndOfFrame();
+                }
+
+                listScenesToLoad[i].sceneObject = SceneManager.GetSceneByBuildIndex(listScenesToLoad[i].buildIndex);
 
                 yield return null;
             }
-            ScenexUtility.Log("--End Start LoadingScenes");
 
-            try
+
+            //Show scenes
+            for (int i = 0; i < listScenesToLoad.Count; i++)
             {
-                currentOperation.CopyLoadedScenes(currentSchema.loadedScenes);
+
+                listScenesToLoad[i].asyncOperation.allowSceneActivation = true;
+                yield return null;
             }
-            catch (System.Exception e)
-            {
-                ScenexUtility.Log("[FAIL] Creating current operation " + e.ToString());
-            }
+
+            SceneInfo mainScene = listScenesToLoad.Find(s => s.isMainScene);
+            if (mainScene != null)
+                SceneManager.SetActiveScene(mainScene.sceneObject);
+
+            yield return SceneManager.UnloadSceneAsync(empty, UnloadSceneOptions.UnloadAllEmbeddedSceneObjects);
+
+            ScenexUtility.Log("--End Start LoadingScenes");
 
             ScenexUtility.Log("Created current operation");
 
@@ -216,87 +283,5 @@ namespace ExceptionSoftware.ExScenes
 
         #endregion
 
-        public IEnumerator ShowLoadedScenes()
-        {
-            for (int i = 0; i < currentSchema.loadedScenes.Count; i++)
-            {
-                ScenexUtility.Log($"\t Activate {currentSchema.loadedScenes[i].sceneName}");
-                currentSchema.loadedScenes[i].asyncOperation.allowSceneActivation = true;
-                yield return null;
-            }
-
-            for (int i = 0; i < currentSchema.loadedScenes.Count; i++)
-            {
-                //while (!currentSchema.loadedScenes[i].SceneObject.isLoaded)
-                //{
-                //    yield return null;
-                //}
-
-                try
-                {
-                    ScenexUtility.Log($"\t Showing {currentSchema.loadedScenes[i].sceneName}");
-                    currentSchema.loadedScenes[i].Status = SceneStatus.Showing;
-                }
-                catch (System.Exception ex)
-                {
-                    Debug.LogException(ex);
-                }
-
-                //try
-                //{
-                //    CallSceneEntryPoint(currentSchema.loadedScenes[i]);
-                //}
-                //catch (System.Exception ex)
-                //{
-                //    Debug.LogException(ex);
-                //}
-                //IncProgress();
-                yield return new WaitForSeconds(.1f);
-            }
-
-            ScenexUtility.Log($"- loadingCoroutineFinished");
-            yield return null;
-            yield return null;
-            //ActiveSchemaMainScene();
-            yield return null;
-            yield return new WaitForSeconds(2);
-
-
-            //void ActiveSchemaMainScene() => SceneManager.SetActiveScene(currentSchema.loadedScenes.First().SceneObject);
-        }
-
-
-        #region Load 1 Scene
-
-        public void LoadScene(SceneInfo info)
-        {
-            StartCoroutine(LoadSceneRoutine(info));
-        }
-
-        internal IEnumerator LoadSceneRoutine(SceneInfo info)
-        {
-            ScenexUtility.Log($"\tBEGIN {info.sceneName}");
-            currentSchema.loadedScenes.Add(info);
-            info.asyncOperation = SceneManager.LoadSceneAsync(info.sceneName, LoadSceneMode.Additive);
-            info.asyncOperation.allowSceneActivation = false;
-
-            info.Status = SceneStatus.Loading;
-
-            while (info.asyncOperation.progress < 0.9f)
-            {
-                yield return new WaitForEndOfFrame();
-            }
-
-            info.sceneObject = SceneManager.GetSceneByName(info.sceneName);
-            info.Status = SceneStatus.Loaded;
-            //IncProgress();
-            ScenexUtility.Log($"\tEND {info.sceneName}");
-        }
-
-        #endregion
-
-
-        //void Call(System.Action action) { if (action != null) action(); }
-        //IEnumerator Call(System.Func<IEnumerator> function) { if (function != null) yield return function(); }
     }
 }

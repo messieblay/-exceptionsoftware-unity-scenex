@@ -25,8 +25,8 @@ namespace ExceptionSoftware.ExScenes
         {
             //Id = 0,
             Name = 0,
-            priority,
-            buildIndex,
+            //priority,
+            mainScene,
             waitForInput,
             canvasOrder,
             description
@@ -35,8 +35,8 @@ namespace ExceptionSoftware.ExScenes
         public enum SortOption
         {
             Name = 0,
-            priority,
-            buildIndex,
+            //priority,
+            mainScene,
             waitForInput,
             canvasOrder,
             description
@@ -45,8 +45,8 @@ namespace ExceptionSoftware.ExScenes
         // Sort options per column
         SortOption[] m_SortOptions = {
             SortOption.Name,
-            SortOption.priority,
-            SortOption.buildIndex,
+            //SortOption.priority,
+            SortOption.mainScene,
             SortOption.waitForInput,
             SortOption.canvasOrder,
             SortOption.description
@@ -149,23 +149,40 @@ namespace ExceptionSoftware.ExScenes
 
             switch (column)
             {
-                case ScenexTableColumns.priority:
+                //case ScenexTableColumns.priority:
 
-                    EditorGUI.BeginChangeCheck();
-                    _priority = EditorGUI.IntField(cellRect, item.data.item.priority);
-                    if (EditorGUI.EndChangeCheck())
-                    {
-                        item.data.item.priority = _priority;
-                    }
-                    break;
-                case ScenexTableColumns.buildIndex:
+                //    EditorGUI.BeginChangeCheck();
+                //    _priority = EditorGUI.IntField(cellRect, item.data.item.priority);
+                //    if (EditorGUI.EndChangeCheck())
+                //    {
+                //        item.data.item.priority = _priority;
+                //    }
+                //    break;
+                case ScenexTableColumns.mainScene:
                     if (item.data.IsScene)
-                        DefaultGUI.Label(cellRect, (item.data.item as SceneInfo).buildIndex.ToString(), args.selected, args.focused);
+                    {
+                        EditorGUI.BeginChangeCheck();
+                        var waitForInput = EditorGUI.Toggle(cellRect, (item.data.item as SceneInfo).isMainScene);
+                        if (EditorGUI.EndChangeCheck())
+                        {
+                            (item.data.item as SceneInfo).isMainScene = waitForInput;
+                            EditorUtility.SetDirty(item.data.item);
+                        }
+                    }
                     break;
                 case ScenexTableColumns.canvasOrder:
 
                     if (item.data.IsScene)
-                        DefaultGUI.Label(cellRect, (item.data.item as SceneInfo).canvasSortOrder.ToString(), args.selected, args.focused);
+                    {
+
+                        EditorGUI.BeginChangeCheck();
+                        var order = EditorGUI.IntField(cellRect, (item.data.item as SceneInfo).canvasSortOrder);
+                        if (EditorGUI.EndChangeCheck())
+                        {
+                            (item.data.item as SceneInfo).canvasSortOrder = order;
+                            EditorUtility.SetDirty(item.data.item);
+                        }
+                    }
 
                     break;
                 case ScenexTableColumns.description:
@@ -174,6 +191,7 @@ namespace ExceptionSoftware.ExScenes
                     if (EditorGUI.EndChangeCheck())
                     {
                         item.data.item.description = description;
+                        EditorUtility.SetDirty(item.data.item);
                     }
                     break;
                 case ScenexTableColumns.waitForInput:
@@ -184,6 +202,7 @@ namespace ExceptionSoftware.ExScenes
                         if (EditorGUI.EndChangeCheck())
                         {
                             (item.data.item as Group).waitForInput = waitForInput;
+                            EditorUtility.SetDirty(item.data.item);
                         }
                     }
                     break;
@@ -215,61 +234,62 @@ namespace ExceptionSoftware.ExScenes
                     sortedAscending = true,
                     sortingArrowAlignment = TextAlignment.Right,
                     minWidth = 200,
+                    width = 200,
                     autoResize = true,
                     allowToggleVisibility = true
                 },
                 //Priority
-                new MultiColumnHeaderState.Column {
-                    headerContent = new GUIContent (ScenexTableColumns.priority.ToString()),
-                    contextMenuText = "Priority",
-                    headerTextAlignment = TextAlignment.Left,
-                    sortedAscending = false,
-                    sortingArrowAlignment = TextAlignment.Right,
-                    minWidth = 50,
-                    autoResize = false,
-                    allowToggleVisibility = true
-                },
+                //new MultiColumnHeaderState.Column {
+                //    headerContent = new GUIContent (ScenexTableColumns.priority.ToString()),
+                //    contextMenuText = "Priority",
+                //    headerTextAlignment = TextAlignment.Left,
+                //    sortedAscending = false,
+                //    sortingArrowAlignment = TextAlignment.Right,
+                //    minWidth = 50,
+                //    autoResize = false,
+                //    allowToggleVisibility = true
+                //},
                 //keylist
                 new MultiColumnHeaderState.Column {
-                    headerContent = new GUIContent (ScenexTableColumns.buildIndex.ToString()),
-                    contextMenuText = "buildIndex",
+                    headerContent = new GUIContent ("Main Scene"),
+                    contextMenuText = "Main Scene",
                     headerTextAlignment = TextAlignment.Left,
-                    //sortedAscending = true,
-                     canSort=false,
-                    //sortingArrowAlignment = TextAlignment.Right,
+                    canSort=false,
+                    width = 100,
                     minWidth = 50,
+                    maxWidth=100,
                     autoResize = false,
                     allowToggleVisibility = true
                 },
                 
                 //STATE
                 new MultiColumnHeaderState.Column {
-                    headerContent = new GUIContent(ScenexTableColumns.waitForInput.ToString()),
+                    headerContent = new GUIContent("Wait For Input"),
                     contextMenuText = "waitForInput",
                     headerTextAlignment = TextAlignment.Left,
                     canSort=false,
-                    width = 50,
+                    width = 100,
                     minWidth = 50,
-                    autoResize = true,
+                    maxWidth=100,
+                    autoResize = false,
                 },
                 //TYPEfILE
                 new MultiColumnHeaderState.Column {
-                    headerContent = new GUIContent (ScenexTableColumns.canvasOrder.ToString()),
+                    headerContent = new GUIContent ("Canvas Order"),
                     contextMenuText = "canvasOrder",
                     headerTextAlignment = TextAlignment.Left,
                     canSort=false,
+                    width = 100,
                     minWidth = 50,
-                    width = 50,
+                    maxWidth=100,
                     autoResize = false,
                     allowToggleVisibility = false
                 },
               new MultiColumnHeaderState.Column {
-                    headerContent = new GUIContent (ScenexTableColumns.description.ToString()),
+                    headerContent = new GUIContent ("Description"),
                     contextMenuText = "description",
                     headerTextAlignment = TextAlignment.Left,
-                     canSort=false,
-                    //sortedAscending = true,
-                    //sortingArrowAlignment = TextAlignment.Right,
+                    canSort=false,
                     minWidth = 100,
                     width = 150,
                     autoResize = true,

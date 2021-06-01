@@ -67,14 +67,6 @@ namespace ExceptionSoftware.ExScenes
         [UnityEngine.SerializeField] public bool IsSubGroup => _type == Type.SubGroup;
         [UnityEngine.SerializeField] public bool IsLayout => IsSubGroup || IsGroup;
 
-        //[UnityEngine.SerializeField] public bool IsFolder => item == null;
-        //[UnityEngine.SerializeField] public bool IsFolderScenes => IsFolder && name.ToLower().StartsWith("scen");
-        //[UnityEngine.SerializeField] public bool IsFolderGroups => IsFolder && !name.ToLower().StartsWith("scen");
-        //[UnityEngine.SerializeField] public bool IsScene => IsFolder ? false : item is SceneInfo;
-        //[UnityEngine.SerializeField] public bool IsLayout => IsFolder ? false : item is Layout;
-        //[UnityEngine.SerializeField] public bool IsGroup => IsFolder ? false : item is Group;
-        //[UnityEngine.SerializeField] public bool IsSubGroup => IsFolder ? false : item is SubGroup;
-
         public TableElement(string name, int depth, int id) : base(name, depth, id)
         {
         }

@@ -10,6 +10,7 @@ namespace ExceptionSoftware.ExScenes
 
         [SerializeField] public int canvasSortOrder = 0;
         [SerializeField] public bool autoActive = false;
+        [SerializeField] public bool isMainScene = false;
 
 
 #if UNITY_EDITOR
@@ -20,24 +21,7 @@ namespace ExceptionSoftware.ExScenes
         [SerializeField] public int buildIndex;
         [SerializeField] public string path = string.Empty;
 
-        public void OnValidate()
-        {
-            if (sceneAsset == null)
-            {
-                sceneName = null;
-                buildIndex = 0;
-                priority = 0;
-                path = null;
-            }
-            else
-            {
-#if UNITY_EDITOR
-                sceneName = sceneAsset.name;
-                path = UnityEditor.AssetDatabase.GetAssetPath(sceneAsset);
-                buildIndex = UnityEditor.SceneManagement.EditorSceneManager.GetSceneByPath(path).buildIndex;
-#endif
-            }
-        }
+
         public override string ToString()
         {
             return $"{sceneName}";
