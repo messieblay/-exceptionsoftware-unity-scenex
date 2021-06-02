@@ -29,6 +29,9 @@ namespace ExceptionSoftware.ExScenes
         [SerializeField] public AnimationCurve faceCurve = AnimationCurve.Linear(0, 0, 1, 1);
 
 
+        [Header("Loggin")]
+        [SerializeField] public bool useUnityConsoleLog = true;
+
         [Header("Objects")]
         [SerializeField] public List<SceneInfo> scenes = new List<SceneInfo>();
         [SerializeField] public List<SceneInfo> loadingScreens = new List<SceneInfo>();

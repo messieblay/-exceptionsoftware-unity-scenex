@@ -27,23 +27,23 @@ namespace ExceptionSoftware.ExScenes
             {
                 this.events = events;
             }
+            ScenexUtility.Log("--------------------------");
 
             _scenexSettings = ScenexUtility.Settings;
             if (_scenexSettings == null)
             {
-                Debug.LogError("Scene loading canceled: Scenex settings not found");
+                ScenexUtility.LogError("Scene loading canceled: Scenex settings not found");
                 yield break;
             }
 
             string[] split = groupToLoad.Split('_');
-            Debug.Log($"{split[0]}-{split[1]}");
             Group group = null;
             SubGroup subgroup = null;
 
             group = ScenexUtility.Settings.groups.Find(s => s.ID == split[0].ToLower());
             if (group == null)
             {
-                Debug.LogError($"Scene loading canceled: Group {split[0]} not found");
+                ScenexUtility.LogError($"Scene loading canceled: Group {split[0]} not found");
                 yield break;
             }
 
@@ -51,7 +51,7 @@ namespace ExceptionSoftware.ExScenes
             subgroup = group.childs.Find(s => s.ID == split[1].ToLower());
             if (subgroup == null)
             {
-                Debug.LogError($"Scene loading canceled: SubGroup {split[1]} not found");
+                ScenexUtility.LogError($"Scene loading canceled: SubGroup {split[1]} not found");
                 yield break;
             }
 
@@ -67,7 +67,7 @@ namespace ExceptionSoftware.ExScenes
 
             if (listScenesToLoad.Count == 0)
             {
-                Debug.LogError($"Scene loading canceled: No scenes to load");
+                ScenexUtility.LogError($"Scene loading canceled: No scenes to load");
                 yield break;
             }
 
@@ -79,6 +79,7 @@ namespace ExceptionSoftware.ExScenes
 
             Scene empty;
 
+            ScenexUtility.Log("Loading STARTED");
             yield return events.onLoadingBegin.Call();
 
             events.onLoadingProgressBegin.Call();
@@ -91,7 +92,6 @@ namespace ExceptionSoftware.ExScenes
             yield return new WaitForSeconds(1);
 
             yield return UnloadAllScenes();
-            Debug.Log("All current scenes unloaded");
 
             if (currentSubGroup.loadingScreen)
             {
@@ -123,6 +123,7 @@ namespace ExceptionSoftware.ExScenes
             if (mainScene != null)
             {
                 SceneManager.SetActiveScene(mainScene.sceneObject);
+                ScenexUtility.Log($"Main scene {mainScene.name} activated");
                 events.onMainSceneActived.Call();
             }
 
@@ -131,6 +132,7 @@ namespace ExceptionSoftware.ExScenes
             //Wait For Input if wants to
             if (group.waitForInput)
             {
+                ScenexUtility.Log("Waiting for input");
                 events.onWaitForInputBegin.Call();
                 yield return new WaitForSeconds(_scenexSettings.delayAfterWaitInput);
                 yield return null;
@@ -155,11 +157,12 @@ namespace ExceptionSoftware.ExScenes
             events.onLoadingProgressEnd.Call();
             yield return null;
 
+            ScenexUtility.Log("Loading FINISHED");
             yield return events.onLoadingEnd.Call();
+            ScenexUtility.Log("--------------------------");
 
 
             TryDesactiveFadeInOut();
-            ScenexUtility.Log("Created current operation");
 
             yield return null;
 
@@ -172,7 +175,7 @@ namespace ExceptionSoftware.ExScenes
                     Scene scene = SceneManager.GetSceneAt(i);
                     if (scene == empty)
                     {
-                        Debug.Log($"{scene.name} skipped");
+                        ScenexUtility.Log($"{scene.name} skipped");
                         continue;
                     }
                     yield return SceneManager.UnloadSceneAsync(scene.buildIndex, _scenexSettings.unloadSceneOptions);
@@ -183,6 +186,7 @@ namespace ExceptionSoftware.ExScenes
 
                 }
 
+                ScenexUtility.Log("All scenes unloaded");
                 events.onAllScenesLoaded.Call();
             }
 
@@ -208,6 +212,7 @@ namespace ExceptionSoftware.ExScenes
                     yield return null;
                 }
 
+                ScenexUtility.Log("All scenes loaded");
 
 
                 //Activado de escenas
@@ -226,6 +231,7 @@ namespace ExceptionSoftware.ExScenes
 
                 }
 
+                ScenexUtility.Log("All scenes activated");
 
                 events.onAllScenesLoaded.Call();
             }

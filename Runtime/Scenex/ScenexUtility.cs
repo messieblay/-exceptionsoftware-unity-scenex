@@ -29,7 +29,6 @@ namespace ExceptionSoftware.ExScenes
 
 
         #region Collect
-
         public static void Collect()
         {
             System.GC.Collect();
@@ -49,8 +48,26 @@ namespace ExceptionSoftware.ExScenes
         #endregion
 
 
-        public static void Log(string msg) => Logx.Log("Scenex", msg);
+        public static void Log(string msg)
+        {
+#if EXLOGS
+            Logx.Log("Scenex", msg, showInUnityConsole: _settings.useUnityConsoleLog);
+#else
+            if (_settings.useUnityConsoleLog)
+                Debug.Log("[Scenex] "+msg);
+#endif
+        }
 
+
+        public static void LogError(string msg)
+        {
+#if EXLOGS
+            Logx.Log("Scenex", msg, showInUnityConsole: _settings.useUnityConsoleLog);
+#else
+            if (_settings.useUnityConsoleLog)
+                Debug.LogError("[Scenex] " + msg);
+#endif
+        }
 
         public static void Call(this System.Action action) { if (action != null) action(); }
         public static IEnumerator Call(this System.Func<IEnumerator> function) { if (function != null) yield return function(); }
