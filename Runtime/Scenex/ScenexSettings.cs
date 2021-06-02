@@ -36,6 +36,5 @@ namespace ExceptionSoftware.ExScenes
         [SerializeField] public List<SceneInfo> scenes = new List<SceneInfo>();
         [SerializeField] public List<SceneInfo> loadingScreens = new List<SceneInfo>();
         [SerializeField] public List<Group> groups = new List<Group>();
-
     }
 }

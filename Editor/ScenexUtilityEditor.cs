@@ -112,7 +112,7 @@ namespace ExceptionSoftware.ExScenes
         {
             if (_settings.scenes.Exists(s => s.sceneAsset == scene))
             {
-                Logx.Log("Scenex", $"Rejected import: Already exist in bbdd");
+                Log($"Rejected import: Scene {scene.name} already exist in bbdd");
                 return;
             }
 

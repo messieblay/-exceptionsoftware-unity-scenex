@@ -39,7 +39,7 @@ namespace ExceptionSoftware.ExScenes
 
         static void OnToolbarGUI()
         {
-            //DoPlayButtons(SceneListUtilityEditor.PlayEditor, SceneListUtilityEditor.StopEditor);
+            DoPlayButtons(ScenexUtilityEditor.PlayEditor, ScenexUtilityEditor.StopEditor);
         }
 
         static void DoPlayButtons(System.Action startAction, System.Action stopAction)
