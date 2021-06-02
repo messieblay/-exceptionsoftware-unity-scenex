@@ -9,13 +9,18 @@ namespace ExceptionSoftware.ExScenes
     {
         [SerializeField] public bool useEmptySceneToLoad = true;
 
-        [Header("Times")]
-        [SerializeField] public float delayBetweenUnLoading = .1f;
+        [Header("Loading")]
         [SerializeField] public float delayBetweenLoading = .1f;
+
+        [SerializeField] public float delayBetweenSceneActivation = .1f;
+
+        [Header("Wait for input")]
+        [SerializeField] public float delayBeforeWaitInput = .1f;
         [SerializeField] public float delayAfterWaitInput = .1f;
 
         [Header("Unloading")]
         [SerializeField] public UnloadSceneOptions unloadSceneOptions = UnloadSceneOptions.UnloadAllEmbeddedSceneObjects;
+        [SerializeField] public float delayBetweenUnLoading = .1f;
 
         [Header("Fade")]
         [SerializeField] public bool useDefaultFade = true;

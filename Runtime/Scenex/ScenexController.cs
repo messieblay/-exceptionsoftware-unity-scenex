@@ -84,6 +84,8 @@ namespace ExceptionSoftware.ExScenes
             events.onLoadingProgressBegin.Call();
             yield return FadeInFromGame();
 
+            BeginProgressBar();
+
             empty = SceneManager.CreateScene("Empty", new CreateSceneParameters());
             SceneManager.SetActiveScene(empty);
             yield return new WaitForSeconds(1);
@@ -115,15 +117,6 @@ namespace ExceptionSoftware.ExScenes
             yield return LoadAllScenes();
 
 
-            if (group.waitForInput)
-            {
-                events.onWaitForInputBegin.Call();
-                yield return null;
-                yield return events.onWaitForInput.Call();
-                yield return null;
-                events.onWaitForInputEnd.Call();
-                yield return new WaitForSeconds(_scenexSettings.delayAfterWaitInput);
-            }
 
             //Set MAIN scene
             SceneInfo mainScene = listScenesToLoad.Find(s => s.isMainScene);
@@ -132,6 +125,22 @@ namespace ExceptionSoftware.ExScenes
                 SceneManager.SetActiveScene(mainScene.sceneObject);
                 events.onMainSceneActived.Call();
             }
+
+            EndProgressBar();
+
+            //Wait For Input if wants to
+            if (group.waitForInput)
+            {
+                events.onWaitForInputBegin.Call();
+                yield return new WaitForSeconds(_scenexSettings.delayAfterWaitInput);
+                yield return null;
+                yield return events.onWaitForInput.Call();
+                yield return null;
+                yield return new WaitForSeconds(_scenexSettings.delayAfterWaitInput);
+                events.onWaitForInputEnd.Call();
+            }
+
+
 
             if (currentSubGroup.loadingScreen)
             {
@@ -168,7 +177,10 @@ namespace ExceptionSoftware.ExScenes
                     }
                     yield return SceneManager.UnloadSceneAsync(scene.buildIndex, _scenexSettings.unloadSceneOptions);
 
+                    IncProgressBar();
+
                     yield return new WaitForSeconds(_scenexSettings.delayBetweenUnLoading);
+
                 }
 
                 events.onAllScenesLoaded.Call();
@@ -188,6 +200,9 @@ namespace ExceptionSoftware.ExScenes
                     }
 
                     listScenesToLoad[i].sceneObject = SceneManager.GetSceneByBuildIndex(listScenesToLoad[i].buildIndex);
+
+                    IncProgressBar();
+
                     yield return new WaitForSeconds(_scenexSettings.delayBetweenLoading);
 
                     yield return null;
@@ -201,6 +216,14 @@ namespace ExceptionSoftware.ExScenes
 
                     listScenesToLoad[i].asyncOperation.allowSceneActivation = true;
                     yield return null;
+
+                    yield return new WaitForSeconds(_scenexSettings.delayBetweenSceneActivation);
+
+                    if (events.onSceneActivated != null)
+                    {
+                        yield return events.onSceneActivated(listScenesToLoad[i]);
+                    }
+
                 }
 
 
@@ -280,7 +303,23 @@ namespace ExceptionSoftware.ExScenes
 
         #endregion
 
-
+        #region Progress
+        float _progressMaxActions = 0;
+        float _progressCurrentActions = 0;
+        void BeginProgressBar()
+        {
+            _progressMaxActions = SceneManager.sceneCount + listScenesToLoad.Count;
+            if (events.onLoadingProgressChanged != null) events.onLoadingProgressChanged(0);
+        }
+        void IncProgressBar()
+        {
+            if (events.onLoadingProgressChanged != null) events.onLoadingProgressChanged(_progressCurrentActions / _progressMaxActions);
+        }
+        void EndProgressBar()
+        {
+            if (events.onLoadingProgressChanged != null) events.onLoadingProgressChanged(1);
+        }
+        #endregion
 
     }
 }

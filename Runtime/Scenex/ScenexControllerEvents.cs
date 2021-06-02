@@ -7,6 +7,8 @@ namespace ExceptionSoftware.ExScenes
         public System.Func<IEnumerator> onLoadingBegin = null;
         public System.Func<IEnumerator> onLoadingEnd = null;
 
+        public System.Func<SceneInfo, IEnumerator> onSceneActivated = null;
+
         public System.Func<IEnumerator> onWaitForInput = null;
 
         public System.Func<IEnumerator> onFadeInFromGame = null;
@@ -28,6 +30,8 @@ namespace ExceptionSoftware.ExScenes
 
         public System.Action onAllScenesUnLoaded = null;
         public System.Action onAllScenesLoaded = null;
+
+        public System.Action<float> onLoadingProgressChanged = null;
 
 
     }
