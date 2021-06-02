@@ -9,27 +9,25 @@ namespace ExceptionSoftware.ExScenes
     [RequireComponent(typeof(DontDestroy))]
     public class ScenexController : MonoBehaviour
     {
-
         public System.Func<IEnumerator> onPreLoading = null;
         public System.Func<IEnumerator> onPostLoading = null;
 
         public System.Func<IEnumerator> onWaitForInput = null;
 
-        public System.Func<IEnumerator> onFadeIn = null;
-        public System.Func<IEnumerator> onFadeOut = null;
+        public System.Func<IEnumerator> onFadeInFromGame = null;
+        public System.Func<IEnumerator> onFadeOutToGame = null;
 
-        public System.Func<IEnumerator> onFadeInLoading = null;
-        public System.Func<IEnumerator> onFadeOutLoading = null;
+        public System.Func<IEnumerator> onFadeInToLoading = null;
+        public System.Func<IEnumerator> onFadeOutFromLoading = null;
 
         public System.Action onLoadingProgressStarts = null;
         public System.Action onLoadingProgressEnds = null;
         public System.Action onAllScenesLoaded = null;
 
-
-        #region Group
         [System.NonSerialized] public Group currentGroup = null;
         [System.NonSerialized] public SubGroup currentSubGroup = null;
 
+        ScenexSettings _scenexSettings;
         public void LoadScene(string groupToLoad)
         {
             StartCoroutine(LoadScenes(groupToLoad));
@@ -61,7 +59,8 @@ namespace ExceptionSoftware.ExScenes
         }
         IEnumerator LoadScenes(Group group, SubGroup subgroup)
         {
-            ScenexSettings scenexSettings = ScenexUtility.Settings;
+            _scenexSettings = ScenexUtility.Settings;
+            TryLoadDefaultFade();
 
             Scene empty;
             currentGroup = group;
@@ -78,7 +77,7 @@ namespace ExceptionSoftware.ExScenes
             yield return onPreLoading.Call();
 
             onLoadingProgressStarts.Call();
-            yield return onFadeIn.Call();
+            yield return FadeInFromGame();
 
             empty = SceneManager.CreateScene("Empty", new CreateSceneParameters());
             SceneManager.SetActiveScene(empty);
@@ -101,7 +100,8 @@ namespace ExceptionSoftware.ExScenes
                 currentSubGroup.loadingScreen.sceneObject = SceneManager.GetSceneByBuildIndex(currentSubGroup.loadingScreen.buildIndex);
                 currentSubGroup.loadingScreen.asyncOperation.allowSceneActivation = true;
                 SceneManager.SetActiveScene(currentSubGroup.loadingScreen.sceneObject);
-                yield return onFadeOutLoading.Call();
+
+                yield return FadeOutToLoading();
             }
 
             yield return ScenexUtility.CollectRoutine();
@@ -117,7 +117,7 @@ namespace ExceptionSoftware.ExScenes
                 yield return null;
                 yield return onWaitForInput.Call();
                 yield return null;
-                yield return new WaitForSeconds(scenexSettings.delayAfterWaitInput);
+                yield return new WaitForSeconds(_scenexSettings.delayAfterWaitInput);
             }
 
             //Set MAIN scene
@@ -129,11 +129,11 @@ namespace ExceptionSoftware.ExScenes
             if (currentSubGroup.loadingScreen)
             {
                 yield return new WaitForSeconds(3);
-                yield return onFadeInLoading.Call();
+                yield return FadeInFromLoading();
                 yield return SceneManager.UnloadSceneAsync(currentSubGroup.loadingScreen.buildIndex, UnloadSceneOptions.UnloadAllEmbeddedSceneObjects);
             }
 
-            yield return onFadeOut.Call();
+            yield return FadeOutToGame();
 
             onLoadingProgressEnds.Call();
             yield return null;
@@ -158,9 +158,9 @@ namespace ExceptionSoftware.ExScenes
                         Debug.Log($"{scene.name} skipped");
                         continue;
                     }
-                    yield return SceneManager.UnloadSceneAsync(scene.buildIndex, scenexSettings.unloadSceneOptions);
+                    yield return SceneManager.UnloadSceneAsync(scene.buildIndex, _scenexSettings.unloadSceneOptions);
 
-                    yield return new WaitForSeconds(scenexSettings.delayBetweenUnLoading);
+                    yield return new WaitForSeconds(_scenexSettings.delayBetweenUnLoading);
                 }
             }
 
@@ -183,7 +183,7 @@ namespace ExceptionSoftware.ExScenes
                     }
 
                     listScenesToLoad[i].sceneObject = SceneManager.GetSceneByBuildIndex(listScenesToLoad[i].buildIndex);
-                    yield return new WaitForSeconds(scenexSettings.delayBetweenLoading);
+                    yield return new WaitForSeconds(_scenexSettings.delayBetweenLoading);
 
                     yield return null;
                 }
@@ -205,7 +205,67 @@ namespace ExceptionSoftware.ExScenes
         }
 
 
+        #region DefaultFade
+        FadeInOut _defaultFade = null;
+
+        void TryLoadDefaultFade()
+        {
+            if (_scenexSettings.useDefaultFade && _defaultFade == null)
+            {
+                var prefab = Resources.Load<FadeInOut>("Scenex/Canvas Fade");
+                _defaultFade = GameObject.Instantiate<FadeInOut>(prefab);
+                _defaultFade?.LoadDefaultData(_scenexSettings.fadeColor, _scenexSettings.fadeTime, _scenexSettings.faceCurve);
+            }
+        }
+
+        IEnumerator FadeInFromGame()
+        {
+            if (_scenexSettings.useDefaultFade && _defaultFade)
+            {
+                yield return _defaultFade.FadeIn();
+            }
+            else
+            {
+                yield return onFadeInFromGame();
+            }
+        }
+        IEnumerator FadeOutToGame()
+        {
+            if (_scenexSettings.useDefaultFade && _defaultFade)
+            {
+                yield return _defaultFade.FadeOut();
+            }
+            else
+            {
+                yield return onFadeOutToGame();
+            }
+        }
+        IEnumerator FadeInFromLoading()
+        {
+            if (_scenexSettings.useDefaultFade && _defaultFade)
+            {
+                yield return _defaultFade.FadeIn();
+            }
+            else
+            {
+                yield return onFadeInToLoading();
+            }
+        }
+        IEnumerator FadeOutToLoading()
+        {
+            if (_scenexSettings.useDefaultFade && _defaultFade)
+            {
+                yield return _defaultFade.FadeOut();
+            }
+            else
+            {
+                yield return onFadeOutFromLoading();
+            }
+        }
+
         #endregion
+
+
 
     }
 }
