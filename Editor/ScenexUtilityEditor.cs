@@ -450,10 +450,10 @@ namespace ExceptionSoftware.ExScenes
         public static void Log(string msg)
         {
 #if EXLOGS
-            Logx.Log("Scenex Editor", msg, showInUnityConsole: _settings.useUnityConsoleLog);
+            Logx.Log("Scenex Editor", msg, Settings.useUnityConsoleLog ? UnityLogType.Log : UnityLogType.None);
 #else
             if (_settings.useUnityConsoleLog)
-                Log("[Scenex Editor] "+msg);
+                Debug.Log("[Scenex Editor] "+msg);
 #endif
         }
 
@@ -461,10 +461,10 @@ namespace ExceptionSoftware.ExScenes
         public static void LogError(string msg)
         {
 #if EXLOGS
-            Logx.Log("Scenex Editor", msg, showInUnityConsole: _settings.useUnityConsoleLog);
+            Logx.Log("Scenex Editor", msg, Settings.useUnityConsoleLog ? UnityLogType.Error : UnityLogType.None);
 #else
             if (_settings.useUnityConsoleLog)
-                LogError("[Scenex Editor] " + msg);
+                Debug.LogError("[Scenex Editor] " + msg);
 #endif
         }
 

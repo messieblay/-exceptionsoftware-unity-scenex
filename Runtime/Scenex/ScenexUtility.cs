@@ -51,7 +51,7 @@ namespace ExceptionSoftware.ExScenes
         public static void Log(string msg)
         {
 #if EXLOGS
-            Logx.Log("Scenex", msg, showInUnityConsole: _settings.useUnityConsoleLog);
+            Logx.Log("Scenex", msg, Settings.useUnityConsoleLog ? UnityLogType.Log : UnityLogType.None);
 #else
             if (_settings.useUnityConsoleLog)
                 Debug.Log("[Scenex] "+msg);
@@ -62,7 +62,7 @@ namespace ExceptionSoftware.ExScenes
         public static void LogError(string msg)
         {
 #if EXLOGS
-            Logx.Log("Scenex", msg, showInUnityConsole: _settings.useUnityConsoleLog);
+            Logx.Log("Scenex", msg, Settings.useUnityConsoleLog ? UnityLogType.Error : UnityLogType.None);
 #else
             if (_settings.useUnityConsoleLog)
                 Debug.LogError("[Scenex] " + msg);

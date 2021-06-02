@@ -23,10 +23,7 @@ namespace ExceptionSoftware.ExScenes
         [SerializeField] public string path = string.Empty;
 
 
-        public override string ToString()
-        {
-            return $"{sceneName}";
-        }
+        public override string ToString() => $"[{buildIndex}]{sceneName} -> {path}";
 
         #region non serialized
         [System.NonSerialized] public Scene sceneObject;
