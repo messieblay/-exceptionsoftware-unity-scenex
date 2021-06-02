@@ -134,7 +134,7 @@ namespace ExceptionSoftware.ExScenes
 
                 if (IsSceneAssigned(scene))
                 {
-                    //Debug.Log()
+                    //Log()
                     continue;
                 }
 
@@ -289,7 +289,7 @@ namespace ExceptionSoftware.ExScenes
                 }
 
                 AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(scene));
-                Debug.Log($"Scene {sceneName} removed");
+                Log($"Scene {sceneName} removed");
             }
             else
             {
@@ -340,7 +340,7 @@ namespace ExceptionSoftware.ExScenes
                 className = "ScenexEnum",
                 enums = CodeFactory.CodeFactory.GenerateEnumContent(_settings.groups.SelectMany(s => s.childs).Select(s => s.parent.name + "_" + s.name).ToList())
             });
-            Debug.Log("ScenexEnum created");
+            Log("ScenexEnum created");
         }
         /// <summary>
         /// Activa el Play mode y guarda cual es la escena actual. Cuando se quite el play recupera esa escena
@@ -380,195 +380,6 @@ namespace ExceptionSoftware.ExScenes
             }
         }
 
-
-        #region Load All
-
-        public static ScenexSettings LoadScenes()
-        {
-            SceneType type;
-            string parentName;
-            string chunkname;
-            int priority;
-            ScenexSettings list = ExAssets.FindAssetsByType<ScenexSettings>().First();
-
-            List<SceneAsset> scenes = ExAssets.FindAssetsByType<SceneAsset>();
-            List<SceneInfo> scenesInfo = new List<SceneInfo>();
-            List<SceneInfo> newscenesInfo = new List<SceneInfo>();
-
-            GetAllSceneAsset(list.scenes.ToList(), ref scenesInfo);
-
-            foreach (SceneAsset scene in scenes)
-            {
-                string path = AssetDatabase.GetAssetPath(scene);
-                //if (path.StartsWith(PathUtilityEditor.pathScenes))
-                {
-                    GetInfoOfScene(scene, out type, out parentName, out chunkname, out priority);
-                    SceneInfo info = GetSceneAssetInfo(scene);
-                    //info.type = type;
-                    info.priority = priority;
-                    info.sceneAsset = scene;
-                    info.sceneName = scene.name;
-                    //info.ParentName = parentName;
-                    //info.ChunkName = chunkname;
-                    info.path = path;
-                    //info.parent = null;
-                    //info.childs.Clear();
-                    //System.Enum.TryParse<SceneListEnum>(scene.name, true, out info.Scene);
-                    EditorUtility.SetDirty(info);
-                    newscenesInfo.Add(info);
-
-
-                    if (info.name != scene.name)
-                    {
-                        AssetDatabase.RenameAsset(AssetDatabase.GetAssetPath(info), scene.name);
-                    }
-                }
-            }
-
-            foreach (var toDelete in ExAssets.FindAssetsByType<SceneInfo>().Except(newscenesInfo))
-            {
-                AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(toDelete));
-            }
-
-
-            //newscenesInfo = newscenesInfo.OrderBy(s => s.type).ThenBy(s => s.priority).ToList();
-            for (int i = newscenesInfo.Count - 1; -1 < i; i--)
-            {
-                //if (newscenesInfo[i].type == SceneType.STATIC || newscenesInfo[i].type == SceneType.SUBSCENE)
-                //{
-                //    string parentNane = GetParentName(newscenesInfo[i].SceneName);
-                //    var parentScene = newscenesInfo.Find(s => s.ParentName == newscenesInfo[i].ParentName && s.type == SceneType.LOGIC);
-                //    if (parentScene != null)
-                //    {
-                //        newscenesInfo[i].parent = parentScene;
-                //        parentScene.childs.Add(newscenesInfo[i]);
-                //        newscenesInfo.RemoveAt(i);
-                //    }
-                //}
-            }
-
-            list.scenes = newscenesInfo;
-            ExAssets.SaveAsset(list);
-            AssetDatabase.Refresh();
-
-            return list;
-
-            SceneInfo GetSceneAssetInfo(SceneAsset asset)
-            {
-                SceneInfo assetinfo = scenesInfo.Find(s => s.sceneAsset == asset);
-                if (assetinfo != null)
-                {
-                    return assetinfo;
-                }
-
-                assetinfo = ScriptableObject.CreateInstance<SceneInfo>();
-                //string path = AssetDatabase.GenerateUniqueAssetPath(SCENES_ASSET_PATH + asset.name + ".asset");
-                //UnityEditor.AssetDatabase.CreateAsset(assetinfo, path);
-
-                return assetinfo;
-            }
-
-
-            void GetAllSceneAsset(List<SceneInfo> sceneAssetInfos, ref List<SceneInfo> finalLines)
-            {
-                foreach (var info in sceneAssetInfos)
-                {
-                    finalLines.Add(info);
-                    //GetAllSceneAsset(info.childs, ref finalLines);
-                }
-            }
-        }
-
-        static void GetInfoOfScene(SceneAsset scene, out SceneType type, out string parentName, out string chunkname, out int priority)
-        {
-
-            chunkname = string.Empty;
-            type = SceneType.General;
-            priority = 0;
-
-            string name = scene.name;
-            string[] splits = name.Split('_');
-            parentName = splits.First();
-
-            if (!int.TryParse(splits.Last(), out priority))
-            {
-                priority = int.MaxValue;
-            }
-
-            if (name.ToLower().StartsWith("first"))
-            {
-                type = SceneType.First;
-                return;
-            }
-
-            if (name.ToLower().StartsWith("empty"))
-            {
-                type = SceneType.Empty;
-                return;
-            }
-
-            if (name.ToLower().StartsWith("loading"))
-            {
-                type = SceneType.Loading;
-                return;
-            }
-
-            if (name.ToLower().StartsWith("shell"))
-            {
-                //type = SceneType.Shell;
-                return;
-            }
-
-            if (name.ToLower().StartsWith("audio"))
-            {
-                //type = SceneType.Audio;
-                return;
-            }
-
-
-            if (name.Contains("_BK"))
-            {
-                //type = SceneType.Background;
-                parentName = name.Substring(0, name.IndexOf("_BK"));
-                return;
-            }
-
-            if (name.Contains("_UI"))
-            {
-                type = SceneType.UI;
-                return;
-            }
-
-            if (name.Contains("_WC_"))
-            {
-                type = SceneType.SUBSCENE;
-                chunkname = name.Split('_').Last();
-                return;
-            }
-
-
-            if (name.EndsWith("_WL"))
-            {
-                type = SceneType.MASTER;
-                return;
-            }
-
-
-            if (name.EndsWith("_WS"))
-            {
-                type = SceneType.SUBSCENE;
-                return;
-            }
-
-        }
-
-        public static string GetParentName(string sceneName)
-        {
-            return sceneName.Trim().Split('_').First();
-        }
-        #endregion
-
-
         public static void PublishToBuildSettings()
         {
             _settings.scenes?.ClearNulls();
@@ -603,7 +414,60 @@ namespace ExceptionSoftware.ExScenes
 
 
 
-            Debug.Log($"{_settings.scenes.Count} Scenes published in BuildSettings");
+            Log($"{_settings.scenes.Count} Scenes published in BuildSettings");
         }
+
+        #region Loggin
+
+        public static void OpenScene(params SceneInfo[] scenesinfo)
+        {
+            for (int i = 0; i < scenesinfo.Length; i++)
+            {
+                EditorSceneManager.OpenScene(AssetDatabase.GetAssetPath(scenesinfo[i].sceneAsset), i == 0 ? OpenSceneMode.Single : OpenSceneMode.Additive);
+            }
+        }
+
+        public static void OpenGroup(params Group[] groups)
+        {
+            var list = groups.SelectMany(s => s.scenes).ToList();
+            for (int i = 0; i < list.Count; i++)
+            {
+                EditorSceneManager.OpenScene(AssetDatabase.GetAssetPath(list[i].sceneAsset), i == 0 ? OpenSceneMode.Single : OpenSceneMode.Additive);
+            }
+        }
+
+        public static void OpenSubGroup(params SubGroup[] sub)
+        {
+            var list = sub.SelectMany(s => s.scenes).ToList();
+            for (int i = 0; i < list.Count; i++)
+            {
+                EditorSceneManager.OpenScene(AssetDatabase.GetAssetPath(list[i].sceneAsset), i == 0 ? OpenSceneMode.Single : OpenSceneMode.Additive);
+            }
+        }
+
+        #endregion
+        #region Loggin
+        public static void Log(string msg)
+        {
+#if EXLOGS
+            Logx.Log("Scenex Editor", msg, showInUnityConsole: _settings.useUnityConsoleLog);
+#else
+            if (_settings.useUnityConsoleLog)
+                Log("[Scenex Editor] "+msg);
+#endif
+        }
+
+
+        public static void LogError(string msg)
+        {
+#if EXLOGS
+            Logx.Log("Scenex Editor", msg, showInUnityConsole: _settings.useUnityConsoleLog);
+#else
+            if (_settings.useUnityConsoleLog)
+                LogError("[Scenex Editor] " + msg);
+#endif
+        }
+
+        #endregion
     }
 }
