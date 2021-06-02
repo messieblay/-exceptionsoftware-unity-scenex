@@ -6,16 +6,16 @@ namespace ExceptionSoftware.ExScenes
     public static class Scenex
     {
         static ScenexController _controller = null;
-        public static void Load(System.Enum group)
+        public static void Load(System.Enum group, ScenexControllerEvents events = null)
         {
-            Load(group.ToString());
+            Load(group.ToString(), events);
         }
-        public static IEnumerator LoadRoutine(System.Enum group)
+        public static IEnumerator LoadRoutine(System.Enum group, ScenexControllerEvents events = null)
         {
-            yield return LoadRoutine(group.ToString());
+            yield return LoadRoutine(group.ToString(), events);
         }
 
-        public static void Load(string groupToLoad)
+        public static void Load(string groupToLoad, ScenexControllerEvents events = null)
         {
             if (_controller == null)
             {
@@ -27,10 +27,10 @@ namespace ExceptionSoftware.ExScenes
                 _controller = Instancex.Create<ScenexController>("Scenex controller");
             }
 
-            _controller.LoadScene(groupToLoad);
+            _controller.LoadScene(groupToLoad, events);
         }
 
-        public static IEnumerator LoadRoutine(string groupToLoad)
+        public static IEnumerator LoadRoutine(string groupToLoad, ScenexControllerEvents events = null)
         {
             if (_controller == null)
             {
@@ -42,7 +42,7 @@ namespace ExceptionSoftware.ExScenes
                 _controller = Instancex.Create<ScenexController>("Scenex controller");
             }
 
-            yield return _controller.LoadScenes(groupToLoad);
+            yield return _controller.LoadScenes(groupToLoad, events);
         }
 
     }

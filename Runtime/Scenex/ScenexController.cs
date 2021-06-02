@@ -9,32 +9,32 @@ namespace ExceptionSoftware.ExScenes
     [RequireComponent(typeof(DontDestroy))]
     public class ScenexController : MonoBehaviour
     {
-        public System.Func<IEnumerator> onPreLoading = null;
-        public System.Func<IEnumerator> onPostLoading = null;
-
-        public System.Func<IEnumerator> onWaitForInput = null;
-
-        public System.Func<IEnumerator> onFadeInFromGame = null;
-        public System.Func<IEnumerator> onFadeOutToGame = null;
-
-        public System.Func<IEnumerator> onFadeInToLoading = null;
-        public System.Func<IEnumerator> onFadeOutFromLoading = null;
-
-        public System.Action onLoadingProgressStarts = null;
-        public System.Action onLoadingProgressEnds = null;
-        public System.Action onAllScenesLoaded = null;
+        public ScenexControllerEvents events = new ScenexControllerEvents();
 
         [System.NonSerialized] public Group currentGroup = null;
         [System.NonSerialized] public SubGroup currentSubGroup = null;
+        [System.NonSerialized] public List<SceneInfo> listScenesToLoad;
 
         ScenexSettings _scenexSettings;
-        public void LoadScene(string groupToLoad)
+        public void LoadScene(string groupToLoad, ScenexControllerEvents events)
         {
-            StartCoroutine(LoadScenes(groupToLoad));
+            StartCoroutine(LoadScenes(groupToLoad, events));
         }
 
-        public IEnumerator LoadScenes(string groupToLoad)
+        public IEnumerator LoadScenes(string groupToLoad, ScenexControllerEvents events)
         {
+            if (events != null)
+            {
+                this.events = events;
+            }
+
+            _scenexSettings = ScenexUtility.Settings;
+            if (_scenexSettings == null)
+            {
+                Debug.LogError("Scene loading canceled: Scenex settings not found");
+                yield break;
+            }
+
             string[] split = groupToLoad.Split('_');
             Debug.Log($"{split[0]}-{split[1]}");
             Group group = null;
@@ -43,7 +43,7 @@ namespace ExceptionSoftware.ExScenes
             group = ScenexUtility.Settings.groups.Find(s => s.ID == split[0].ToLower());
             if (group == null)
             {
-                Debug.Log($"Group {split[0]} not found");
+                Debug.LogError($"Scene loading canceled: Group {split[0]} not found");
                 yield break;
             }
 
@@ -51,7 +51,23 @@ namespace ExceptionSoftware.ExScenes
             subgroup = group.childs.Find(s => s.ID == split[1].ToLower());
             if (subgroup == null)
             {
-                Debug.Log($"SubGroup {split[1]} not found");
+                Debug.LogError($"Scene loading canceled: SubGroup {split[1]} not found");
+                yield break;
+            }
+
+            //Set group and subgroup
+            currentGroup = group;
+            currentSubGroup = subgroup;
+
+            //Generate scenes to load list;
+            listScenesToLoad = new List<SceneInfo>();
+            listScenesToLoad.AddRange(currentGroup.scenes);
+            listScenesToLoad.AddRange(currentSubGroup.scenes);
+            listScenesToLoad = listScenesToLoad.OrderBy(s => s.priority).ToList();
+
+            if (listScenesToLoad.Count == 0)
+            {
+                Debug.LogError($"Scene loading canceled: No scenes to load");
                 yield break;
             }
 
@@ -59,24 +75,13 @@ namespace ExceptionSoftware.ExScenes
         }
         IEnumerator LoadScenes(Group group, SubGroup subgroup)
         {
-            _scenexSettings = ScenexUtility.Settings;
             TryLoadDefaultFade();
 
             Scene empty;
-            currentGroup = group;
-            currentSubGroup = subgroup;
 
-            List<SceneInfo> listScenesToLoad = new List<SceneInfo>();
-            listScenesToLoad.AddRange(currentGroup.scenes);
-            listScenesToLoad.AddRange(currentSubGroup.scenes);
+            yield return events.onLoadingBegin.Call();
 
-            listScenesToLoad = listScenesToLoad.OrderBy(s => s.priority).ToList();
-
-
-
-            yield return onPreLoading.Call();
-
-            onLoadingProgressStarts.Call();
+            events.onLoadingProgressBegin.Call();
             yield return FadeInFromGame();
 
             empty = SceneManager.CreateScene("Empty", new CreateSceneParameters());
@@ -101,6 +106,7 @@ namespace ExceptionSoftware.ExScenes
                 currentSubGroup.loadingScreen.asyncOperation.allowSceneActivation = true;
                 SceneManager.SetActiveScene(currentSubGroup.loadingScreen.sceneObject);
 
+                events.onLoadingScreenBegin.Call();
                 yield return FadeOutToLoading();
             }
 
@@ -108,26 +114,28 @@ namespace ExceptionSoftware.ExScenes
 
             yield return LoadAllScenes();
 
-            //yield return SceneManager.UnloadSceneAsync(empty, UnloadSceneOptions.UnloadAllEmbeddedSceneObjects);
-
-            onAllScenesLoaded.Call();
 
             if (group.waitForInput)
             {
+                events.onWaitForInputBegin.Call();
                 yield return null;
-                yield return onWaitForInput.Call();
+                yield return events.onWaitForInput.Call();
                 yield return null;
+                events.onWaitForInputEnd.Call();
                 yield return new WaitForSeconds(_scenexSettings.delayAfterWaitInput);
             }
 
             //Set MAIN scene
             SceneInfo mainScene = listScenesToLoad.Find(s => s.isMainScene);
             if (mainScene != null)
+            {
                 SceneManager.SetActiveScene(mainScene.sceneObject);
-
+                events.onMainSceneActived.Call();
+            }
 
             if (currentSubGroup.loadingScreen)
             {
+                events.onLoadingScreenEnd.Call();
                 yield return new WaitForSeconds(3);
                 yield return FadeInFromLoading();
                 yield return SceneManager.UnloadSceneAsync(currentSubGroup.loadingScreen.buildIndex, UnloadSceneOptions.UnloadAllEmbeddedSceneObjects);
@@ -135,13 +143,13 @@ namespace ExceptionSoftware.ExScenes
 
             yield return FadeOutToGame();
 
-            onLoadingProgressEnds.Call();
+            events.onLoadingProgressEnd.Call();
             yield return null;
 
-            yield return onPostLoading.Call();
+            yield return events.onLoadingEnd.Call();
 
 
-
+            TryDesactiveFadeInOut();
             ScenexUtility.Log("Created current operation");
 
             yield return null;
@@ -162,15 +170,12 @@ namespace ExceptionSoftware.ExScenes
 
                     yield return new WaitForSeconds(_scenexSettings.delayBetweenUnLoading);
                 }
+
+                events.onAllScenesLoaded.Call();
             }
 
             IEnumerator LoadAllScenes()
             {
-
-
-                /*
-                 * CARGADO ESCENAS DEPENDIENTES DEL ESQUEMA
-                 */
                 for (int i = 0; i < listScenesToLoad.Count; i++)
                 {
 
@@ -199,8 +204,7 @@ namespace ExceptionSoftware.ExScenes
                 }
 
 
-
-
+                events.onAllScenesLoaded.Call();
             }
         }
 
@@ -214,7 +218,18 @@ namespace ExceptionSoftware.ExScenes
             {
                 var prefab = Resources.Load<FadeInOut>("Scenex/Canvas Fade");
                 _defaultFade = GameObject.Instantiate<FadeInOut>(prefab);
-                _defaultFade?.LoadDefaultData(_scenexSettings.fadeColor, _scenexSettings.fadeTime, _scenexSettings.faceCurve);
+            }
+            if (_defaultFade)
+            {
+                _defaultFade.LoadDefaultData(_scenexSettings.fadeColor, _scenexSettings.fadeTime, _scenexSettings.faceCurve);
+                _defaultFade.gameObject.SetActive(true);
+            }
+        }
+        void TryDesactiveFadeInOut()
+        {
+            if (_scenexSettings.useDefaultFade && _defaultFade != null)
+            {
+                _defaultFade.gameObject.SetActive(false);
             }
         }
 
@@ -226,7 +241,7 @@ namespace ExceptionSoftware.ExScenes
             }
             else
             {
-                yield return onFadeInFromGame();
+                yield return events.onFadeInFromGame();
             }
         }
         IEnumerator FadeOutToGame()
@@ -237,7 +252,7 @@ namespace ExceptionSoftware.ExScenes
             }
             else
             {
-                yield return onFadeOutToGame();
+                yield return events.onFadeOutToGame();
             }
         }
         IEnumerator FadeInFromLoading()
@@ -248,7 +263,7 @@ namespace ExceptionSoftware.ExScenes
             }
             else
             {
-                yield return onFadeInToLoading();
+                yield return events.onFadeInToLoading();
             }
         }
         IEnumerator FadeOutToLoading()
@@ -259,7 +274,7 @@ namespace ExceptionSoftware.ExScenes
             }
             else
             {
-                yield return onFadeOutFromLoading();
+                yield return events.onFadeOutFromLoading();
             }
         }
 

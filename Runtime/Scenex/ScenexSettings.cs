@@ -19,7 +19,7 @@ namespace ExceptionSoftware.ExScenes
 
         [Header("Fade")]
         [SerializeField] public bool useDefaultFade = true;
-        [SerializeField] public float fadeTime = .3f;
+        [SerializeField] public float fadeTime = .5f;
         [SerializeField] public Color fadeColor = Color.black;
         [SerializeField] public AnimationCurve faceCurve = AnimationCurve.Linear(0, 0, 1, 1);
 
