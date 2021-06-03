@@ -71,7 +71,7 @@ namespace ExceptionSoftware.ExScenes
             return _settings;
         }
 
-        [MenuItem(SCENES_MENU_ITEM + "Select Asset", priority = 3000)]
+        [MenuItem(SCENES_MENU_ITEM + "Select Asset", priority = ExConstants.MENU_ITEM_PRIORITY)]
         static void SelectAsset()
         {
             LoadOrCreate();

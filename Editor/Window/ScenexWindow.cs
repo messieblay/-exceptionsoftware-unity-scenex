@@ -10,7 +10,7 @@ namespace ExceptionSoftware.ExScenes
 {
     public class ScenexWindow : ExWindow<ScenexWindow>
     {
-        [MenuItem("Tools/Scenes/Manager", priority = 3000)]
+        [MenuItem("Tools/Scenes/Manager", priority = ExConstants.MENU_ITEM_PRIORITY)]
         public static ScenexWindow GetWindow()
         {
 
