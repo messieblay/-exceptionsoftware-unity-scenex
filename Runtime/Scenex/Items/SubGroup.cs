@@ -10,5 +10,13 @@ namespace ExceptionSoftware.ExScenes
         [SerializeField] public SceneInfo loadingScreen = null;
         //[SerializeField] public string ID = null;
         [SerializeField] public bool waitForInput = true;
+        [SerializeField] public LoadMode loadingMode = LoadMode.UnloadPrevious;
+
+        public enum LoadMode
+        {
+            UnloadPrevious, Additive
+        }
     }
+
+
 }

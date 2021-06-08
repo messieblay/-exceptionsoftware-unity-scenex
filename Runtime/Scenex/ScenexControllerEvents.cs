@@ -11,6 +11,9 @@ namespace ExceptionSoftware.ExScenes
 
         public System.Func<IEnumerator> onWaitForInput = null;
 
+        public System.Func<IEnumerator> afterMainSceneActived = null;
+
+
         public System.Func<IEnumerator> onFadeInFromGame = null;
         public System.Func<IEnumerator> onFadeOutToGame = null;
 

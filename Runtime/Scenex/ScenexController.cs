@@ -83,33 +83,40 @@ namespace ExceptionSoftware.ExScenes
             yield return events.onLoadingBegin.Call();
 
             events.onLoadingProgressBegin.Call();
-            yield return FadeInFromGame();
+
+            if (subgroup.loadingMode == SubGroup.LoadMode.UnloadPrevious)
+            {
+                yield return FadeInFromGame();
+            }
 
             BeginProgressBar();
 
-            empty = SceneManager.CreateScene("Empty", new CreateSceneParameters());
-            SceneManager.SetActiveScene(empty);
-            yield return new WaitForSeconds(1);
-
-            yield return UnloadAllScenes();
-
-            if (currentSubGroup.loadingScreen)
+            if (subgroup.loadingMode == SubGroup.LoadMode.UnloadPrevious)
             {
-                yield return SceneManager.LoadSceneAsync(currentSubGroup.loadingScreen.buildIndex, LoadSceneMode.Single);
-                currentSubGroup.loadingScreen.asyncOperation = SceneManager.LoadSceneAsync(currentSubGroup.loadingScreen.buildIndex, LoadSceneMode.Single);
-                currentSubGroup.loadingScreen.asyncOperation.allowSceneActivation = false;
+                empty = SceneManager.CreateScene("Empty", new CreateSceneParameters());
+                SceneManager.SetActiveScene(empty);
+                yield return new WaitForSeconds(1);
 
-                while (currentSubGroup.loadingScreen.asyncOperation.progress < 0.9f)
+                yield return UnloadAllScenes();
+
+                if (currentSubGroup.loadingScreen)
                 {
-                    yield return new WaitForEndOfFrame();
+                    yield return SceneManager.LoadSceneAsync(currentSubGroup.loadingScreen.buildIndex, LoadSceneMode.Single);
+                    currentSubGroup.loadingScreen.asyncOperation = SceneManager.LoadSceneAsync(currentSubGroup.loadingScreen.buildIndex, LoadSceneMode.Single);
+                    currentSubGroup.loadingScreen.asyncOperation.allowSceneActivation = false;
+
+                    while (currentSubGroup.loadingScreen.asyncOperation.progress < 0.9f)
+                    {
+                        yield return new WaitForEndOfFrame();
+                    }
+
+                    currentSubGroup.loadingScreen.sceneObject = SceneManager.GetSceneByBuildIndex(currentSubGroup.loadingScreen.buildIndex);
+                    currentSubGroup.loadingScreen.asyncOperation.allowSceneActivation = true;
+                    SceneManager.SetActiveScene(currentSubGroup.loadingScreen.sceneObject);
+
+                    events.onLoadingScreenBegin.Call();
+                    yield return FadeOutToLoading();
                 }
-
-                currentSubGroup.loadingScreen.sceneObject = SceneManager.GetSceneByBuildIndex(currentSubGroup.loadingScreen.buildIndex);
-                currentSubGroup.loadingScreen.asyncOperation.allowSceneActivation = true;
-                SceneManager.SetActiveScene(currentSubGroup.loadingScreen.sceneObject);
-
-                events.onLoadingScreenBegin.Call();
-                yield return FadeOutToLoading();
             }
 
             yield return ScenexUtility.CollectRoutine();
@@ -117,43 +124,49 @@ namespace ExceptionSoftware.ExScenes
             yield return LoadAllScenes();
 
 
-
-            //Set MAIN scene
-            SceneInfo mainScene = listScenesToLoad.Find(s => s.isMainScene);
-            if (mainScene != null)
+            if (subgroup.loadingMode == SubGroup.LoadMode.UnloadPrevious)
             {
-                SceneManager.SetActiveScene(mainScene.sceneObject);
-                ScenexUtility.Log($"Main scene {mainScene.name} activated");
-                events.onMainSceneActived.Call();
+                //Set MAIN scene
+                SceneInfo mainScene = listScenesToLoad.Find(s => s.isMainScene);
+                if (mainScene != null)
+                {
+                    SceneManager.SetActiveScene(mainScene.sceneObject);
+                    ScenexUtility.Log($"Main scene {mainScene.name} activated");
+                    events.onMainSceneActived.Call();
+                }
+
+                yield return events.afterMainSceneActived.Call();
             }
 
             EndProgressBar();
 
-            //Wait For Input if wants to
-            if (group.waitForInput)
+            if (subgroup.loadingMode == SubGroup.LoadMode.UnloadPrevious)
             {
-                ScenexUtility.Log("Waiting for input");
-                events.onWaitForInputBegin.Call();
-                yield return new WaitForSeconds(_scenexSettings.delayAfterWaitInput);
-                yield return null;
-                yield return events.onWaitForInput.Call();
-                yield return null;
-                yield return new WaitForSeconds(_scenexSettings.delayAfterWaitInput);
-                events.onWaitForInputEnd.Call();
+                //Wait For Input if wants to
+                if (group.waitForInput)
+                {
+                    ScenexUtility.Log("Waiting for input");
+                    events.onWaitForInputBegin.Call();
+                    yield return new WaitForSeconds(_scenexSettings.delayAfterWaitInput);
+                    yield return null;
+                    yield return events.onWaitForInput.Call();
+                    yield return null;
+                    yield return new WaitForSeconds(_scenexSettings.delayAfterWaitInput);
+                    events.onWaitForInputEnd.Call();
+                }
+
+
+
+                if (currentSubGroup.loadingScreen)
+                {
+                    events.onLoadingScreenEnd.Call();
+                    yield return new WaitForSeconds(3);
+                    yield return FadeInFromLoading();
+                    yield return SceneManager.UnloadSceneAsync(currentSubGroup.loadingScreen.buildIndex, UnloadSceneOptions.UnloadAllEmbeddedSceneObjects);
+                }
+
+                yield return FadeOutToGame();
             }
-
-
-
-            if (currentSubGroup.loadingScreen)
-            {
-                events.onLoadingScreenEnd.Call();
-                yield return new WaitForSeconds(3);
-                yield return FadeInFromLoading();
-                yield return SceneManager.UnloadSceneAsync(currentSubGroup.loadingScreen.buildIndex, UnloadSceneOptions.UnloadAllEmbeddedSceneObjects);
-            }
-
-            yield return FadeOutToGame();
-
             events.onLoadingProgressEnd.Call();
             yield return null;
 
@@ -314,7 +327,13 @@ namespace ExceptionSoftware.ExScenes
         float _progressCurrentActions = 0;
         void BeginProgressBar()
         {
-            _progressMaxActions = SceneManager.sceneCount + listScenesToLoad.Count;
+            _progressMaxActions = listScenesToLoad.Count;
+            if (currentSubGroup.loadingMode == SubGroup.LoadMode.UnloadPrevious)
+            {
+                _progressMaxActions += SceneManager.sceneCount;
+            }
+
+
             if (events.onLoadingProgressChanged != null) events.onLoadingProgressChanged(0);
         }
         void IncProgressBar()

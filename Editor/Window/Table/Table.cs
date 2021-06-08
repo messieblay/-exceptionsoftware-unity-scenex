@@ -28,6 +28,7 @@ namespace ExceptionSoftware.ExScenes
             Name = 0,
             //priority,
             mainScene,
+            Mode,
             waitForInput,
             canvasOrder,
             description
@@ -38,6 +39,7 @@ namespace ExceptionSoftware.ExScenes
             Name = 0,
             //priority,
             mainScene,
+            Mode,
             waitForInput,
             canvasOrder,
             description
@@ -48,6 +50,7 @@ namespace ExceptionSoftware.ExScenes
             SortOption.Name,
             //SortOption.priority,
             SortOption.mainScene,
+            SortOption.Mode,
             SortOption.waitForInput,
             SortOption.canvasOrder,
             SortOption.description
@@ -151,15 +154,6 @@ namespace ExceptionSoftware.ExScenes
 
             switch (column)
             {
-                //case ScenexTableColumns.priority:
-
-                //    EditorGUI.BeginChangeCheck();
-                //    _priority = EditorGUI.IntField(cellRect, item.data.item.priority);
-                //    if (EditorGUI.EndChangeCheck())
-                //    {
-                //        item.data.item.priority = _priority;
-                //    }
-                //    break;
                 case ScenexTableColumns.mainScene:
                     if (item.data.IsScene)
                     {
@@ -194,6 +188,18 @@ namespace ExceptionSoftware.ExScenes
                     {
                         item.data.item.description = description;
                         EditorUtility.SetDirty(item.data.item);
+                    }
+                    break;
+                case ScenexTableColumns.Mode:
+                    if (item.data.IsSubGroup)
+                    {
+                        EditorGUI.BeginChangeCheck();
+                        SubGroup.LoadMode loadingMode = (SubGroup.LoadMode)EditorGUI.EnumPopup(cellRect, (item.data.item as SubGroup).loadingMode);
+                        if (EditorGUI.EndChangeCheck())
+                        {
+                            (item.data.item as SubGroup).loadingMode = loadingMode;
+                            EditorUtility.SetDirty(item.data.item);
+                        }
                     }
                     break;
                 case ScenexTableColumns.waitForInput:
@@ -240,18 +246,6 @@ namespace ExceptionSoftware.ExScenes
                     autoResize = true,
                     allowToggleVisibility = true
                 },
-                //Priority
-                //new MultiColumnHeaderState.Column {
-                //    headerContent = new GUIContent (ScenexTableColumns.priority.ToString()),
-                //    contextMenuText = "Priority",
-                //    headerTextAlignment = TextAlignment.Left,
-                //    sortedAscending = false,
-                //    sortingArrowAlignment = TextAlignment.Right,
-                //    minWidth = 50,
-                //    autoResize = false,
-                //    allowToggleVisibility = true
-                //},
-                //keylist
                 new MultiColumnHeaderState.Column {
                     headerContent = new GUIContent ("Main Scene"),
                     contextMenuText = "Main Scene",
@@ -264,6 +258,17 @@ namespace ExceptionSoftware.ExScenes
                     allowToggleVisibility = true
                 },
                 
+                //STATE
+                new MultiColumnHeaderState.Column {
+                    headerContent = new GUIContent("Mode"),
+                    contextMenuText = "Mode",
+                    headerTextAlignment = TextAlignment.Left,
+                    canSort=false,
+                    width = 150,
+                    minWidth = 150,
+                    maxWidth=150,
+                    autoResize = false,
+                },
                 //STATE
                 new MultiColumnHeaderState.Column {
                     headerContent = new GUIContent("Wait For Input"),
