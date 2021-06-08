@@ -4,10 +4,9 @@ namespace ExceptionSoftware.ExScenes
 {
     public interface iSceneLoading
     {
-        IEnumerator Loading();
-        IEnumerator UnLoading();
+        IEnumerator OnLoaded();
+        IEnumerator OnUnLoading();
 
-        int Priority();
 
 
     }

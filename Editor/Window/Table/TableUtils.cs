@@ -146,7 +146,8 @@ namespace ExceptionSoftware.ExScenes
                         {
 
                             TableElement parent = treeModel.Find(itemToRemove.parent.id);
-                            ScenexUtilityEditor.RemoveLoadingScene(parent.item as SubGroup, false);
+                            ScenexUtilityEditor.RemoveSceneLoadingFromParent(itemToRemove.item as SceneInfo, parent.item, false);
+                            //ScenexUtilityEditor.RemoveLoadingScene(parent.item as SubGroup, false);
                         }
                     }
 

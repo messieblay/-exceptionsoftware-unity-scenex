@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 
 namespace ExceptionSoftware.ExScenes
 {
@@ -10,5 +11,7 @@ namespace ExceptionSoftware.ExScenes
             this.sceneInfo = sceneInfo;
         }
 
+        public virtual IEnumerator OnLoaded() { yield return null; }
+        public virtual IEnumerator OnUnLoading() { yield return null; }
     }
 }

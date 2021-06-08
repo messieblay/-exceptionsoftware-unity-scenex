@@ -191,6 +191,16 @@ namespace ExceptionSoftware.ExScenes
                         ScenexUtility.Log($"{scene.name} skipped");
                         continue;
                     }
+
+
+                    //Call Entry point and Unlload the scene
+                    foreach (var entry in GetEntryPoints(scene))
+                    {
+                        yield return entry.OnUnLoading();
+                    }
+
+
+
                     yield return SceneManager.UnloadSceneAsync(scene.buildIndex, _scenexSettings.unloadSceneOptions);
 
                     IncProgressBar();
@@ -242,6 +252,13 @@ namespace ExceptionSoftware.ExScenes
                         yield return events.onSceneActivated(listScenesToLoad[i]);
                     }
 
+
+                    //Call Entry point and initi the scene
+                    foreach (var entry in GetEntryPoints(listScenesToLoad[i].sceneObject))
+                    {
+                        yield return entry.OnLoaded();
+                    }
+
                 }
 
                 ScenexUtility.Log("All scenes activated");
@@ -250,7 +267,15 @@ namespace ExceptionSoftware.ExScenes
             }
         }
 
-
+        IEnumerable<SceneEntryPoint> GetEntryPoints(Scene scene)
+        {
+            SceneEntryPoint entry;
+            foreach (GameObject g in scene.GetRootGameObjects())
+            {
+                entry = g.GetComponent<SceneEntryPoint>();
+                if (entry != null) yield return entry;
+            }
+        }
         #region DefaultFade
         FadeInOut _defaultFade = null;
 

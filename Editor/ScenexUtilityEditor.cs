@@ -299,6 +299,38 @@ namespace ExceptionSoftware.ExScenes
                 if (fireDataChange) onDataChanged.TryInvoke();
             }
         }
+
+        public static void RemoveSceneLoadingFromParent(SceneInfo scene, Item parent, bool fireDataChange = true)
+        {
+            if (parent == null)
+            {
+                string sceneName = scene.name;
+                //Se quiere borrar escena de toda la bases de datos
+                foreach (var g in _settings.groups)
+                {
+                    foreach (var sg in g.childs)
+                    {
+                        if (sg.loadingScreen == scene)
+                        {
+                            sg.loadingScreen = null;
+                            EditorUtility.SetDirty(sg);
+                        }
+                    }
+                }
+
+                AssetDatabase.DeleteAsset(AssetDatabase.GetAssetPath(scene));
+                Log($"Scene {sceneName} removed");
+            }
+            else
+            {
+                SubGroup layout = parent as SubGroup;
+                layout.loadingScreen = null;
+                EditorUtility.SetDirty(layout);
+                if (fireDataChange) onDataChanged.TryInvoke();
+            }
+        }
+
+
         public static void SetPriority<T>(ref List<T> list) where T : Item
         {
             for (int i = 0; i < list.Count; i++)
