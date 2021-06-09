@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace ExceptionSoftware.ExScenes
 {
-    public class SceneEntryPoint : MonoBehaviour
+    public class ScenexEntryPoint : MonoBehaviour
     {
         public SceneInfo sceneInfo;
         public virtual void OnSceneStart(SceneInfo sceneInfo)
@@ -13,5 +13,8 @@ namespace ExceptionSoftware.ExScenes
 
         public virtual IEnumerator OnLoaded() { yield return null; }
         public virtual IEnumerator OnUnLoading() { yield return null; }
+
+        public virtual IEnumerator OnLoadingFinished() { yield return null; }
+
     }
 }

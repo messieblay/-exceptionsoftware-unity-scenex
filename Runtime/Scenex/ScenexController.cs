@@ -167,6 +167,13 @@ namespace ExceptionSoftware.ExScenes
 
                 yield return FadeOutToGame();
             }
+
+            //Call Entry point and initi the scene
+            foreach (var entry in GetEntryPointsOnCurrentScenes())
+            {
+                yield return entry.OnLoadingFinished();
+            }
+
             events.onLoadingProgressEnd.Call();
             yield return null;
 
@@ -267,15 +274,29 @@ namespace ExceptionSoftware.ExScenes
             }
         }
 
-        IEnumerable<SceneEntryPoint> GetEntryPoints(Scene scene)
+        IEnumerable<ScenexEntryPoint> GetEntryPoints(Scene scene)
         {
-            SceneEntryPoint entry;
+            ScenexEntryPoint entry;
             foreach (GameObject g in scene.GetRootGameObjects())
             {
-                entry = g.GetComponent<SceneEntryPoint>();
+                entry = g.GetComponent<ScenexEntryPoint>();
                 if (entry != null) yield return entry;
             }
         }
+        IEnumerable<ScenexEntryPoint> GetEntryPointsOnCurrentScenes()
+        {
+            ScenexEntryPoint entry;
+            for (int i = 0; i < SceneManager.sceneCount; i++)
+            {
+                foreach (GameObject g in SceneManager.GetSceneAt(i).GetRootGameObjects())
+                {
+                    entry = g.GetComponent<ScenexEntryPoint>();
+                    if (entry != null) yield return entry;
+                }
+            }
+
+        }
+
         #region DefaultFade
         FadeInOut _defaultFade = null;
 
