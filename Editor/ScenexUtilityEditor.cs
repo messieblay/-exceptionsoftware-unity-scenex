@@ -12,7 +12,7 @@ namespace ExceptionSoftware.ExScenes
         static ScenexSettings _settings = null;
         public static ScenexSettings Settings => LoadOrCreate();
 
-        public const string SCENES_PATH = ExConstants.GAME_PATH + "Scenes/";
+        public const string SCENES_PATH = ExConstants.SETTINGS_PATH + "Scenes/";
         public const string SCENES_PATH_RESOURCES = SCENES_PATH + "Resources/";
         public const string SCENES_PATH_SCENES = SCENES_PATH_RESOURCES + "Scenes/";
         public const string SCENES_PATH_LAYOUT = SCENES_PATH_RESOURCES + "Layouts/";
@@ -408,7 +408,7 @@ namespace ExceptionSoftware.ExScenes
             if (!EditorApplication.isPlaying && !EditorApplication.isPlayingOrWillChangePlaymode && EditorPrefs.GetBool("SceneListUtilityEditor_returnToScene"))
             {
                 EditorPrefs.SetBool("SceneListUtilityEditor_returnToScene", false);
-                EditorApplication.OpenScene(EditorPrefs.GetString("SceneListUtilityEditor_lastOpenedScene"));
+                EditorSceneManager.OpenScene(EditorPrefs.GetString("SceneListUtilityEditor_lastOpenedScene"));
             }
         }
 

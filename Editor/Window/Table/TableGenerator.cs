@@ -7,7 +7,6 @@ namespace ExceptionSoftware.ExScenes
     static class TableGenerator
     {
         static int IDCounter;
-        static bool _dataloaded = false;
         static ScenexSettings _db;
         static List<TableElement> roots;
 
