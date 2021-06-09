@@ -14,6 +14,8 @@ namespace ExceptionSoftware.ExScenes
         public virtual IEnumerator OnLoaded() { yield return null; }
         public virtual IEnumerator OnUnLoading() { yield return null; }
 
+        public virtual IEnumerator OnWaitForInput() { yield return null; }
+
         public virtual IEnumerator OnLoadingFinished() { yield return null; }
 
     }
