@@ -49,7 +49,12 @@ namespace ExceptionSoftware.ExScenes
 
             if (_settings == null)
             {
-                _settings = ExAssets.FindAssetsByType<ScenexSettings>().First();
+                _settings = ExAssets.FindAssetsByType<ScenexSettings>().FirstOrDefault();
+            }
+
+            if (_settings == null)
+            {
+                _settings = Resources.FindObjectsOfTypeAll<ScenexSettings>().FirstOrDefault();
             }
 
             if (_settings == null)
