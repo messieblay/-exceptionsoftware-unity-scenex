@@ -117,6 +117,25 @@ namespace ExceptionSoftware.ExScenes
                     ReupdateTable();
                 }
                 GUILayout.FlexibleSpace();
+                if (Application.isPlaying)
+                {
+                    GUI.color = Color.red;
+                    if (GUILayout.Button("Stop", EditorStyles.toolbarButton))
+                    {
+                        ScenexUtilityEditor.StopEditor();
+                    }
+                    GUI.color = Color.white;
+                }
+                else
+                {
+                    GUI.color = Color.green;
+                    if (GUILayout.Button("Play", EditorStyles.toolbarButton))
+                    {
+                        ScenexUtilityEditor.PlayEditor();
+                    }
+                    GUI.color = Color.white;
+                }
+                GUILayout.FlexibleSpace();
                 if (GUILayout.Button("Save", EditorStyles.toolbarButton))
                 {
                     ScenexUtilityEditor.PublishToBuildSettings();
