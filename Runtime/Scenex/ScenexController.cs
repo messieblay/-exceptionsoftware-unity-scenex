@@ -167,7 +167,6 @@ namespace ExceptionSoftware.ExScenes
                 if (currentSubGroup.loadingScreen)
                 {
                     events.onLoadingScreenEnd.Call();
-                    yield return new WaitForSeconds(3);
                     yield return FadeInFromLoading();
                     yield return SceneManager.UnloadSceneAsync(currentSubGroup.loadingScreen.buildIndex, UnloadSceneOptions.UnloadAllEmbeddedSceneObjects);
                 }
