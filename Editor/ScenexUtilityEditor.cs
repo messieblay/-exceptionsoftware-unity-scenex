@@ -59,7 +59,7 @@ namespace ExceptionSoftware.ExScenes
 
             if (_settings == null)
             {
-                _settings = ExAssets.CreateAsset<ScenexSettings>(SCENES_PATH_RESOURCES, VARIABLES_SETTINGS_FILENAME);
+                _settings = ExAssets.CreateAsset<ScenexSettings>(SCENES_PATH_RESOURCES, VARIABLES_SETTINGS_FILENAME, true, true);
             }
 
 
