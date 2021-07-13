@@ -149,7 +149,8 @@ namespace ExceptionSoftware.ExScenes
                     ScenexUtility.Log("Waiting for input");
                     events.onWaitForInputBegin.Call();
 
-                    foreach (var entry in GetEntryPointsCached())
+                    //foreach (var entry in GetEntryPointsCached())
+                    foreach (var entry in GetEntryPointsOnCurrentScenes())
                     {
                         yield return entry.OnWaitForInput();
                     }
@@ -175,7 +176,9 @@ namespace ExceptionSoftware.ExScenes
             }
 
             //Call Entry point and initi the scene
-            foreach (var entry in GetEntryPointsCached())
+
+            //foreach (var entry in GetEntryPointsCached())
+            foreach (var entry in GetEntryPointsOnCurrentScenes())
             {
                 yield return entry.OnLoadingFinished();
             }
