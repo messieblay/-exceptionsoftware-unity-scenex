@@ -7,6 +7,7 @@ namespace ExceptionSoftware.ExScenes
         IEnumerator OnUnLoading();
 
         IEnumerator OnLoaded();
+        IEnumerator OnActivated();
         IEnumerator OnBeforeWaitForInput();
         IEnumerator OnLoadingFinished();
 
