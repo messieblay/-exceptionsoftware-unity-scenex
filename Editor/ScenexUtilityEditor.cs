@@ -75,6 +75,16 @@ namespace ExceptionSoftware.ExScenes
             }
             return _settings;
         }
+        [MenuItem("Play/Play", priority = 0)]
+        static void Play()
+        {
+            ScenexUtilityEditor.PlayEditor();
+        }
+        [MenuItem("Play/Stop", priority = 1)]
+        static void Stop()
+        {
+            ScenexUtilityEditor.StopEditor();
+        }
 
         [MenuItem(SCENES_MENU_ITEM + "Settings", priority = ExConstants.MENU_ITEM_PRIORITY)]
         static void SelectAsset()
