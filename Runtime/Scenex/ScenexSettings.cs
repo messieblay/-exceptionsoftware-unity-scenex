@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 namespace ExceptionSoftware.ExScenes
 {
     [System.Serializable]
-    public class ScenexSettings : ScriptableObject
+    public class ScenexSettings : SettingsAsset
     {
         [SerializeField] public bool useEmptySceneToLoad = true;
 
