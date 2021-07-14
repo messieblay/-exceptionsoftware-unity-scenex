@@ -8,7 +8,6 @@ namespace ExceptionSoftware.ExScenes
     public class SceneInfo : Item
     {
 
-        [SerializeField] public int canvasSortOrder = 0;
         [SerializeField] public bool autoActive = false;
         [SerializeField] public bool isMainScene = false;
         [SerializeField, HideInInspector] public bool isLoadingScreen = false;

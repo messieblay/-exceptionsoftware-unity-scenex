@@ -46,7 +46,11 @@ namespace ExceptionSoftware.ExScenes
             ScenexUtilityEditor.onDataChanged -= ReupdateTable;
         }
 
-        protected override void DoResize() => DoEnable();
+        protected override void DoResize()
+        {
+            Rect rpos = base.position.CopyToZero();
+            _rectLayout = rpos.Split(SplitMode.Vertical, 20, 41, -1);
+        }
         protected override void DoRecompile() => DoEnable();
         //private void OnFocus() => ReupdateTable();
 

@@ -30,7 +30,6 @@ namespace ExceptionSoftware.ExScenes
             mainScene,
             Mode,
             waitForInput,
-            canvasOrder,
             description
         }
 
@@ -41,7 +40,6 @@ namespace ExceptionSoftware.ExScenes
             mainScene,
             Mode,
             waitForInput,
-            canvasOrder,
             description
         }
 
@@ -52,7 +50,6 @@ namespace ExceptionSoftware.ExScenes
             SortOption.mainScene,
             SortOption.Mode,
             SortOption.waitForInput,
-            SortOption.canvasOrder,
             SortOption.description
         };
 
@@ -166,21 +163,6 @@ namespace ExceptionSoftware.ExScenes
                         }
                     }
                     break;
-                case ScenexTableColumns.canvasOrder:
-
-                    if (item.data.IsScene)
-                    {
-
-                        EditorGUI.BeginChangeCheck();
-                        var order = EditorGUI.IntField(cellRect, (item.data.item as SceneInfo).canvasSortOrder);
-                        if (EditorGUI.EndChangeCheck())
-                        {
-                            (item.data.item as SceneInfo).canvasSortOrder = order;
-                            EditorUtility.SetDirty(item.data.item);
-                        }
-                    }
-
-                    break;
                 case ScenexTableColumns.description:
                     EditorGUI.BeginChangeCheck();
                     var description = EditorGUI.DelayedTextField(cellRect, item.data.item.description);
@@ -279,18 +261,6 @@ namespace ExceptionSoftware.ExScenes
                     minWidth = 50,
                     maxWidth=100,
                     autoResize = false,
-                },
-                //TYPEfILE
-                new MultiColumnHeaderState.Column {
-                    headerContent = new GUIContent ("Canvas Order"),
-                    contextMenuText = "canvasOrder",
-                    headerTextAlignment = TextAlignment.Left,
-                    canSort=false,
-                    width = 100,
-                    minWidth = 50,
-                    maxWidth=100,
-                    autoResize = false,
-                    allowToggleVisibility = false
                 },
               new MultiColumnHeaderState.Column {
                     headerContent = new GUIContent ("Description"),
