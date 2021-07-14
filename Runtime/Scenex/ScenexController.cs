@@ -14,7 +14,7 @@ namespace ExceptionSoftware.ExScenes
         [System.NonSerialized] public Group currentGroup = null;
         [System.NonSerialized] public SubGroup currentSubGroup = null;
         [System.NonSerialized] public List<SceneInfo> listScenesToLoad;
-        [System.NonSerialized] List<ScenexEntryPoint> _cachedEntryPoints = new List<ScenexEntryPoint>();
+        [System.NonSerialized] List<iSceneLoading> _cachedEntryPoints = new List<iSceneLoading>();
 
         ScenexSettings _scenexSettings;
         public void LoadScene(string groupToLoad, ScenexControllerEvents events)
@@ -136,6 +136,12 @@ namespace ExceptionSoftware.ExScenes
                     events.onMainSceneActived.Call();
                 }
 
+                //Call Entry point and OnLoaded the scene
+                foreach (var entry in GetEntryPointsOnCurrentScenes())
+                {
+                    yield return entry.OnActivated();
+                }
+
                 yield return events.afterMainSceneActived.Call();
             }
 
@@ -149,10 +155,10 @@ namespace ExceptionSoftware.ExScenes
                     ScenexUtility.Log("Waiting for input");
                     events.onWaitForInputBegin.Call();
 
-                    //foreach (var entry in GetEntryPointsCached())
+
                     foreach (var entry in GetEntryPointsOnCurrentScenes())
                     {
-                        yield return entry.OnWaitForInput();
+                        yield return entry.OnBeforeWaitForInput();
                     }
 
                     yield return new WaitForSeconds(_scenexSettings.delayAfterWaitInput);
@@ -176,8 +182,6 @@ namespace ExceptionSoftware.ExScenes
             }
 
             //Call Entry point and initi the scene
-
-            //foreach (var entry in GetEntryPointsCached())
             foreach (var entry in GetEntryPointsOnCurrentScenes())
             {
                 yield return entry.OnLoadingFinished();
@@ -210,7 +214,7 @@ namespace ExceptionSoftware.ExScenes
 
 
                     //Call Entry point and Unlload the scene
-                    foreach (var entry in GetEntryPoints(scene))
+                    foreach (var entry in GetEntryPointsOnCurrentScenes())
                     {
                         yield return entry.OnUnLoading();
                     }
@@ -253,7 +257,7 @@ namespace ExceptionSoftware.ExScenes
 
                 ScenexUtility.Log("All scenes loaded");
 
-                _cachedEntryPoints = new List<ScenexEntryPoint>();
+                _cachedEntryPoints = new List<iSceneLoading>();
                 //Activado de escenas
                 for (int i = 0; i < listScenesToLoad.Count; i++)
                 {
@@ -267,16 +271,14 @@ namespace ExceptionSoftware.ExScenes
                     {
                         yield return events.onSceneActivated(listScenesToLoad[i]);
                     }
-
-
-                    //Call Entry point and initi the scene
-                    foreach (var entry in GetEntryPoints(listScenesToLoad[i].sceneObject))
-                    {
-                        _cachedEntryPoints.Add(entry);
-                        yield return entry.OnLoaded();
-                    }
-
                 }
+
+                //Call Entry point and OnLoaded the scene
+                foreach (var entry in GetEntryPointsOnCurrentScenes())
+                {
+                    yield return entry.OnLoaded();
+                }
+
 
                 ScenexUtility.Log("All scenes activated");
 
@@ -284,39 +286,46 @@ namespace ExceptionSoftware.ExScenes
             }
         }
 
-        IEnumerable<ScenexEntryPoint> GetEntryPoints(Scene scene)
+
+
+        IEnumerable<iSceneLoading> GetEntryPointsOnCurrentScenes()
         {
-            ScenexEntryPoint entry;
+            for (int i = 0; i < SceneManager.sceneCount; i++)
+            {
+                foreach (iSceneLoading g in SceneManager.GetSceneAt(i).GetRootGameObjects().SelectMany(s => s.GetComponentsInChildren<iSceneLoading>(true)).Where(s => s != null))
+                {
+                    yield return g;
+                }
+            }
+        }
+
+
+
+        IEnumerable<iSceneLoading> GetEntryPoints(Scene scene)
+        {
+            iSceneLoading entry;
             foreach (GameObject g in scene.GetRootGameObjects())
             {
-                entry = g.GetComponent<ScenexEntryPoint>();
+                entry = g.GetComponent<iSceneLoading>();
                 if (entry != null) yield return entry;
             }
         }
 
-        IEnumerable<ScenexEntryPoint> GetEntryPointsOnCurrentScenes()
-        {
-            ScenexEntryPoint entry;
-            for (int i = 0; i < SceneManager.sceneCount; i++)
-            {
-                foreach (GameObject g in SceneManager.GetSceneAt(i).GetRootGameObjects())
-                {
-                    entry = g.GetComponent<ScenexEntryPoint>();
-                    if (entry != null) yield return entry;
-                }
-            }
-        }
-        IEnumerable<ScenexEntryPoint> GetEntryPointsCached()
+
+        IEnumerable<iSceneLoading> GetEntryPointsCached()
         {
             if (_cachedEntryPoints != null && _cachedEntryPoints.Count > 0)
             {
-                foreach (ScenexEntryPoint entry in _cachedEntryPoints)
+                foreach (iSceneLoading entry in _cachedEntryPoints)
                 {
                     if (entry != null)
                         yield return entry;
                 }
             }
+
         }
+
+
 
         #region DefaultFade
         FadeInOut _defaultFade = null;
