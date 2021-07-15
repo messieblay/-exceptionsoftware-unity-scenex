@@ -181,12 +181,6 @@ namespace ExceptionSoftware.ExScenes
                 yield return FadeOutToGame();
             }
 
-            //Call Entry point and initi the scene
-            foreach (var entry in GetEntryPointsOnCurrentScenes())
-            {
-                yield return entry.OnLoadingFinished();
-            }
-
             events.onLoadingProgressEnd.Call();
             yield return null;
 
@@ -198,6 +192,13 @@ namespace ExceptionSoftware.ExScenes
             TryDesactiveFadeInOut();
 
             yield return null;
+
+
+            //Call Entry point and initi the scene
+            foreach (var entry in GetEntryPointsOnCurrentScenes())
+            {
+                yield return entry.OnLoadingFinished();
+            }
 
 
             IEnumerator UnloadAllScenes()
