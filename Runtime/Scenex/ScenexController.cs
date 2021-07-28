@@ -231,7 +231,7 @@ namespace ExceptionSoftware.ExScenes
                 }
 
                 ScenexUtility.Log("All scenes unloaded");
-                events.onAllScenesLoaded.Call();
+                events.onAllScenesUnLoaded.Call();
             }
 
             IEnumerator LoadAllScenes()
