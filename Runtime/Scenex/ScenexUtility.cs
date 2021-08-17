@@ -70,6 +70,15 @@ namespace ExceptionSoftware.ExScenes
         }
 
         public static void Call(this System.Action action) { if (action != null) action(); }
-        public static IEnumerator Call(this System.Func<IEnumerator> function) { if (function != null) yield return function(); }
+        public static IEnumerator Call(this System.Func<IEnumerator> function)
+        {
+            if (function != null)
+            {
+                foreach (var i in function.GetInvocationList())
+                {
+                    yield return ((System.Func<IEnumerator>)i).Invoke();
+                }
+            }
+        }
     }
 }
