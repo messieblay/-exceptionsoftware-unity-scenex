@@ -157,7 +157,7 @@ namespace ExceptionSoftware.ExScenes
 
                     var currentScenes = GetEntryPointsOnCurrentScenes();
 
-                    foreach (var entry in currentScenes)
+                    foreach (var entry in GetEntryPointsOnCurrentScenes())
                     {
                         yield return entry.OnBeforeWaitForInput();
                     }
@@ -165,14 +165,14 @@ namespace ExceptionSoftware.ExScenes
                     yield return new WaitForSeconds(_scenexSettings.delayAfterWaitInput);
                     yield return null;
 
-                    foreach (var entry in currentScenes)
+                    foreach (var entry in GetEntryPointsOnCurrentScenes())
                     {
                         yield return entry.OnWaitForInput();
                     }
 
                     yield return events.onWaitForInput.Call();
 
-                    foreach (var entry in currentScenes)
+                    foreach (var entry in GetEntryPointsOnCurrentScenes())
                     {
                         yield return entry.OnAfterWaitForInput();
                     }
