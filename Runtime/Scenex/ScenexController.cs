@@ -155,15 +155,28 @@ namespace ExceptionSoftware.ExScenes
                     ScenexUtility.Log("Waiting for input");
                     events.onWaitForInputBegin.Call();
 
+                    var currentScenes = GetEntryPointsOnCurrentScenes();
 
-                    foreach (var entry in GetEntryPointsOnCurrentScenes())
+                    foreach (var entry in currentScenes)
                     {
                         yield return entry.OnBeforeWaitForInput();
                     }
 
                     yield return new WaitForSeconds(_scenexSettings.delayAfterWaitInput);
                     yield return null;
+
+                    foreach (var entry in currentScenes)
+                    {
+                        yield return entry.OnWaitForInput();
+                    }
+
                     yield return events.onWaitForInput.Call();
+
+                    foreach (var entry in currentScenes)
+                    {
+                        yield return entry.OnAfterWaitForInput();
+                    }
+
                     yield return null;
                     yield return new WaitForSeconds(_scenexSettings.delayAfterWaitInput);
                     events.onWaitForInputEnd.Call();

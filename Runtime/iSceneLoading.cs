@@ -9,6 +9,8 @@ namespace ExceptionSoftware.ExScenes
         IEnumerator OnLoaded();
         IEnumerator OnActivated();
         IEnumerator OnBeforeWaitForInput();
+        IEnumerator OnWaitForInput();
+        IEnumerator OnAfterWaitForInput();
         IEnumerator OnLoadingFinished();
 
 
